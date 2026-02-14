@@ -74,6 +74,32 @@ body {
     transition: background 0.5s;
 }
 
+/* --- CUSTOM SCROLLBAR --- */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-secondary) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--text-secondary);
+    border-radius: 10px;
+    opacity: 0.5;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
+
 #container {
     position: relative;
     width: 100vw;
@@ -98,8 +124,8 @@ svg {
     position: absolute;
     top: 20px;
     left: 20px;
-    bottom: 160px;
-    width: 320px;
+    bottom: 40px;
+    width: 25vw;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -160,7 +186,6 @@ svg {
 /* 2. AI ALERTS LIST */
 #rec-list {
     flex: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -250,6 +275,7 @@ svg {
     flex-direction: column;
     gap: 10px;
     min-height: 180px;
+    overflow-y: auto;
 }
 
 .action-card {
@@ -262,7 +288,7 @@ svg {
     cursor: pointer;
     transition: all 0.2s;
     border: 1px solid transparent;
-    animation: slideIn 0.3s ease;
+    /* animation: slideIn 0.3s ease; */
 }
 
 .action-card:hover {
@@ -280,30 +306,124 @@ svg {
     font-size: 0.9rem;
 }
 
-.initiate-btn {
-    background: var(--accent-color);
-    color: white;
-    padding: 8px 16px;
+.action-btns {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    padding: 6px 14px;
     border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: none;
+    font-size: 0.7rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    user-select: none;
 }
 
-.initiate-btn:hover {
+.action-btn-yes {
+    background: var(--accent-color);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn-yes:hover {
+    filter: brightness(1.15);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-    filter: brightness(1.1);
 }
 
-.initiate-btn:active {
-    transform: translateY(0);
+.action-btn-no {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--text-secondary);
 }
+
+.action-btn-no:hover {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+    transform: translateY(-1px);
+}
+
+.action-btn-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* --- PATHOGEN CAROUSEL --- */
+.pathogen-carousel {
+    position: relative;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+    padding-bottom: 10px;
+}
+
+.carousel-track {
+    position: relative;
+    min-height: 95px;
+    overflow: hidden;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+.carousel-slide.active {
+    position: relative;
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.carousel-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.carousel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    opacity: 0.3;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+    opacity: 1;
+    background: var(--accent-color);
+    transform: scale(1.3);
+}
+
+.carousel-dot:hover {
+    opacity: 0.7;
+}
+
+.pathogen-severity {
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: white;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+}
+
 
 @keyframes fadeIn {
     from {
@@ -334,7 +454,7 @@ svg {
     left: 50%;
     transform: translate(-50%, -50%) scale(0.9);
     width: 65%;
-    height: 70%;
+    height: 80%;
     background: var(--panel-bg);
     border: var(--panel-border);
     backdrop-filter: blur(25px);
@@ -412,7 +532,7 @@ svg {
 /* --- BOTTOM & CONTROLS --- */
 #controls-area {
     position: absolute;
-    bottom: 160px;
+    bottom: 180px;
     right: 30px;
     display: flex;
     flex-direction: column;
@@ -442,8 +562,8 @@ svg {
 
 #bottom-panel {
     position: absolute;
-    bottom: 20px;
-    left: 20px;
+    bottom: 40px;
+    left: 27.5vw;
     right: 20px;
     height: 120px;
     background-color: var(--panel-bg);
@@ -631,4 +751,24 @@ svg {
 /* Transition for smooth shading */
 .country {
     transition: fill 0.4s ease, fill-opacity 0.4s ease;
+}
+
+/* --- INFECTION ZONE CIRCLES --- */
+.infection-zone {
+    pointer-events: none;
+    animation: infectionPulse 3s ease-in-out infinite;
+}
+
+@keyframes infectionPulse {
+    0% {
+        opacity: 0.85;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.85;
+    }
 }
