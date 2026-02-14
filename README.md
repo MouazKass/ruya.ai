@@ -1,6 +1,6 @@
-<h1 align="center"> SENTINEL - Self-Improving Pandemic Early Warning System </h1>
+<h1 align="center"> LANTERN - Learning Agent Network for Threat Early-warning and Response Navigation </h1>
 
-SENTINEL is a multi-agent early warning system that detects emerging outbreak signals by fusing genomic, epidemiological/OSINT, and geospatial indicators. It improves over time by evaluating each run against ground truth, updating fusion weights, and refining agent strategies. Alerts are never dispatched without explicit human approval through a Ministry of Health (MoH) dashboard.
+LANTERN is a multi-agent early warning system that detects emerging outbreak signals by fusing genomic, epidemiological/OSINT, and geospatial indicators. It improves over time by evaluating each run against ground truth, updating fusion weights, and refining agent strategies. Alerts are never dispatched without explicit human approval through a Ministry of Health (MoH) dashboard.
 
 WHAT IT DOES
 - Ingests and normalizes outbreak-related signals from multiple sources into a canonical schema.
