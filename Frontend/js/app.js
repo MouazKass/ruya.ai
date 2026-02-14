@@ -27,28 +27,63 @@ let DB = {
     get: function(id) { return this.countries[id] || null; }
 };
 
-// --- 2. AI INSIGHT LOGIC ---
-const AI_INSIGHTS = {
-    LOW: [
-        { alert: "Social sentiment normal.", type: "Observation", color: "var(--success-color)", action: "Maintain Monitoring", icon: "🔍" },
-        { alert: "Hygiene adherence at 78%.", type: "Opportunity", color: "var(--success-color)", action: "Public Info Campaign", icon: "📢" }
-    ],
-    MEDIUM: [
-        { alert: "Abnormal travel vectors detected.", type: "Warning", color: "var(--warning-color)", action: "Screen Incoming Arrivals", icon: "🌡️" },
-        { alert: "PPE reserves depleting rapidly.", type: "Logistics", color: "var(--warning-color)", action: "Distribute Stockpile", icon: "📦" }
-    ],
-    HIGH: [
-        { alert: "Healthcare capacity critical.", type: "CRITICAL", color: "var(--danger-color)", action: "Deploy Field Hospitals", icon: "🏥" },
-        { alert: "Viral mutation markers found.", type: "Bio-Threat", color: "var(--danger-color)", action: "Enforce Regional Lockdown", icon: "🚧" },
-        { alert: "Uncontrolled border transmission.", type: "Security", color: "var(--danger-color)", action: "Seal National Borders", icon: "⛔" }
-    ]
+// --- 2. AI STRATEGY ENGINE ---
+const STRATEGIES = {
+    TRADE: { 
+        id: "s-trade", type: "Economic", icon: "📉", 
+        desc: (name) => `Halt all trade imports from ${name}.`,
+        reason: "Viral persistence on surfaces detected in cargo."
+    },
+    FLIGHTS: { 
+        id: "s-air", type: "Travel", icon: "✈️", 
+        desc: (name) => `Ground all commercial flights from ${name}.`,
+        reason: "Passenger transmission probability > 85%."
+    },
+    BORDERS: { 
+        id: "s-border", type: "Security", icon: "🚧", 
+        desc: (name) => `Seal land borders with ${name}.`,
+        reason: "Uncontrolled migration vectors identified."
+    },
+    AID: { 
+        id: "s-aid", type: "Medical", icon: "�", 
+        desc: (name) => `Dispatch medical aid package to ${name}.`,
+        reason: "Healthcare collapse imminent. Humanitarian crisis."
+    }
 };
+
+function generateIntel(name, infected, pop) {
+    const rate = infected / pop;
+    const suggestions = [];
+
+    // Logic for generating strategies based on infection severity
+    if (rate > 0.05) { // Critical (>5%)
+        suggestions.push(STRATEGIES.FLIGHTS);
+        suggestions.push(STRATEGIES.BORDERS);
+        suggestions.push(STRATEGIES.TRADE);
+    } else if (rate > 0.01) { // High (>1%)
+        suggestions.push(STRATEGIES.FLIGHTS);
+        suggestions.push(STRATEGIES.AID);
+    } else if (rate > 0.001) { // Moderate
+        suggestions.push({ 
+            id: "s-monitor", type: "Intel", icon: "�", 
+            desc: (n) => `Increase satellite surveillance on ${n}.`,
+            reason: "Anomalous movement patterns detected."
+        });
+    } else {
+        suggestions.push({
+            id: "s-calm", type: "Status", icon: "✅",
+            desc: (n) => `Maintain standard protocols for ${n}.`,
+            reason: "No significant threat vectors."
+        });
+    }
+    return suggestions;
+}
 
 function determineStatus(infected, pop) {
     const rate = infected / pop;
-    if (rate > 0.02) return { level: "CRITICAL", color: "var(--danger-color)", protocols: AI_INSIGHTS.HIGH };
-    if (rate > 0.005) return { level: "ELEVATED", color: "var(--warning-color)", protocols: AI_INSIGHTS.MEDIUM };
-    return { level: "STABLE", color: "var(--success-color)", protocols: AI_INSIGHTS.LOW };
+    if (rate > 0.05) return { level: "CRITICAL", color: "var(--danger-color)" };
+    if (rate > 0.01) return { level: "ELEVATED", color: "var(--warning-color)" };
+    return { level: "STABLE", color: "var(--success-color)" };
 }
 
 // --- 3. D3 & RENDER LOGIC ---
@@ -111,7 +146,34 @@ Promise.all([
         .on("mouseover", (e, d) => showTooltip(e, d.name))
         .on("mouseout", hideTooltip);
     
-    updateView('global', null);
+    // 5. Set Initial View (Target: UAE)
+    const uaeId = "784";
+    const uaeFeature = DB.features[uaeId];
+
+    if (uaeFeature) {
+        // Trigger selection visuals
+        activeCountry = g.selectAll("path.country").filter(d => d.id === uaeId).classed("active", true);
+        updateView('country', uaeId);
+        drawConnections(uaeId);
+
+        // Zoom to Middle East Region (approximate bounds for UAE focus)
+        // D3 Geo bounds might be tight, so we scale out slightly from the country's centroid
+        const [[x0, y0], [x1, y1]] = path.bounds(uaeFeature);
+        const cw = x1 - x0;
+        const ch = y1 - y0;
+        const x = (x0 + x1) / 2;
+        const y = (y0 + y1) / 2;
+        // Reduced scale factor from 0.9 to 0.4 to zoom out and show more context
+        const scale = Math.min(3, 0.4 / Math.max(cw / width, ch / height)); 
+        const translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+        svg.transition().duration(2000).call(
+            zoom.transform,
+            d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+        );
+    } else {
+        updateView('global', null);
+    }
 
 }).catch(error => {
     console.error("Error loading Pandemic Command Center data:", error);
@@ -210,13 +272,105 @@ function animateVehicle(pathSelection, iconId, color, duration) {
     }
 }
 
+const UAE_ID = "784";
+const DISEASE_INFO = {
+    name: "Crimson Fever",
+    symptoms: ["High Fever", "Respiratory Distress", "Hemoptysis"],
+    R0: 4.5
+};
+
+// Initialize Sidebar once (Idempotent-ish, redraws static UAE sidebar)
+function initCommandCenter() {
+    const uae = DB.get(UAE_ID);
+    if (!uae) return;
+
+    // 1. Identify Top Threats (Highest infected countries excluding UAE)
+    const threats = Object.values(DB.countries)
+        .filter(c => c.id !== UAE_ID)
+        .sort((a, b) => b.infected - a.infected)
+        .slice(0, 3);
+
+    // 2. Generate Strategies based on threats
+    const strategies = [];
+    threats.forEach(t => {
+        if (t.infected > 100000) {
+            strategies.push({ ...STRATEGIES.FLIGHTS, target: t.name });
+            strategies.push({ ...STRATEGIES.TRADE, target: t.name });
+        } else if (t.infected > 50000) {
+             strategies.push({ ...STRATEGIES.BORDERS, target: t.name });
+        }
+    });
+    // Limit to 4 actionable strategies
+    const activeStrategies = strategies.slice(0, 4);
+
+    updateCommandSidebar(uae, threats, activeStrategies);
+}
+
+function updateCommandSidebar(uaeStats, topThreats, strategies) {
+    const $panel = $("#status-panel");
+    const status = determineStatus(uaeStats.infected, uaeStats.pop);
+    
+    $panel.css("border-left-color", status.color);
+    animateTextJQ("status-count", formatNum(uaeStats.infected));
+    $("#status-label").text("DOMESTIC CASES").css("color", status.color);
+
+    const $alerts = $("#alerts-container");
+    const $actions = $("#actions-container");
+    const $recList = $("#rec-list");
+
+    let intelHTML = `
+        <div style="margin-bottom:15px;">
+            <div class="rec-head" style="color:var(--accent-color)">PATHOGEN: ${DISEASE_INFO.name}</div>
+            <div class="rec-body" style="font-size:0.75rem">Symptoms: ${DISEASE_INFO.symptoms.join(", ")}</div>
+        </div>
+        <div class="rec-head">TOP EXTERNAL THREATS</div>
+    `;
+    
+    topThreats.forEach(t => {
+        intelHTML += `
+            <div class="risk-item" style="border-left: 2px solid var(--danger-color); padding-left:8px; margin-bottom:5px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>${t.name}</span>
+                    <span style="color:var(--danger-color)">${formatNum(t.infected)}</span>
+                </div>
+            </div>`;
+    });
+    $alerts.html(intelHTML);
+    $(".panel-title", $recList).text("Intel & Situation Report");
+
+    let actionsHTML = "";
+    strategies.forEach(s => {
+        actionsHTML += `
+            <div class="action-card" onclick="triggerAction('${s.id}', '${s.target}')">
+                <div style="display:flex; align-items:center; gap:10px; width:100%">
+                    <span class="action-icon">${s.icon}</span>
+                    <div style="flex:1">
+                        <div class="rec-head" style="margin-bottom:2px; font-size:0.8rem; color:var(--text-secondary)">SUGGESTION: ${s.type} Protocol</div>
+                        <div class="action-text">${s.desc(s.target)}</div>
+                    </div>
+                    <div style="background:var(--bg-color); padding:5px 10px; border-radius:4px; font-size:0.7rem; border:1px solid var(--text-secondary); cursor:pointer;">
+                        INITIATE
+                    </div>
+                </div>
+            </div>`;
+    });
+    
+    if (strategies.length === 0) {
+        actionsHTML = `<div class="rec-item"><div class="rec-body">No immediate external threats requiring intervention. Monitor global vectors.</div></div>`;
+    }
+
+    $actions.html(actionsHTML);
+    $(".panel-title", $("#action-list")).text("Strategic Response");
+}
+
 function updateView(type, data) {
     let stats = {};
     let name = "", sub = "";
 
+    // Bottom Panel Logic (Dynamic Exploration)
     if (type === 'global') {
         stats = DB.global;
-        name = "Select Location"; sub = "Global Aggregate View";
+        name = "Global View"; sub = "Aggregate Data";
         $("#news-action").removeClass("visible");
     } 
     else if (type === 'country') {
@@ -234,50 +388,39 @@ function updateView(type, data) {
         $("#news-action").addClass("visible");
     }
 
-    const status = determineStatus(stats.infected, stats.pop);
-    updateSidebar(stats.infected, status);
-
+    // Update Bottom Panel ONLY
     animateText("dash-name", name);
     animateText("dash-sub", sub);
     animateText("val-1", formatNum(stats.pop));
-    animateText("val-2", stats.gdp === 0 ? "---" : "$" + stats.gdp + " B");
+    animateText("val-2", stats.gdp ? "$" + stats.gdp + " B" : "---");
     animateText("val-3", formatNum(stats.infected));
-    $("#val-4").css("color", status.color).text(status.level); // Simple set for val-4, or animateText if preferred
-    // Actually animateText uses ID lookup, so let's stick to that for text updates where we defined it.
-    // But animateText is creating DOM elements or using vanilla. Let's refactor animateText to jQuery.
-    animateTextJQ("val-4", status.level);
-}
-
-function updateSidebar(infectedCount, statusData) {
-    const $panel = $("#status-panel");
-    $panel.css("border-left-color", statusData.color);
-    animateTextJQ("status-count", formatNum(infectedCount));
     
-    $("#status-label").text(statusData.level + " CONDITION").css("color", statusData.color);
+    const status = determineStatus(stats.infected, stats.pop || 1);
+    animateTextJQ("val-4", status.level);
+    $("#val-4").css("color", status.color);
 
-    const $alerts = $("#alerts-container");
-    const $actions = $("#actions-container");
-    let alertsHTML = "", actionsHTML = "";
-
-    statusData.protocols.forEach(item => {
-        alertsHTML += `
-            <div class="rec-item" style="border-left-color:${item.color}">
-                <div class="rec-head">
-                    <span>${item.type}</span>
-                    <span style="color:${item.color}">●</span>
-                </div>
-                <div class="rec-body">"${item.alert}"</div>
-            </div>`;
-        
-        actionsHTML += `
-            <div class="action-card">
-                <span class="action-icon">${item.icon}</span>
-                <span class="action-text">${item.action}</span>
-            </div>`;
-    });
-    $alerts.html(alertsHTML);
-    $actions.html(actionsHTML);
+    // Ensure Static Sidebar is Initialized
+    if (DB.countries[UAE_ID]) {
+        initCommandCenter();
+    }
 }
+
+// Remove old updateSidebar function as it is replaced by updateCommandSidebar
+// window.triggerAction remains same but updated for context description
+window.triggerAction = function(strategyId, targetName) {
+    const $card = $(event.target).closest(".action-card");
+    const $btn = $card.find("div:last-child"); // The button div
+    
+    $card.css("border-color", "var(--success-color)");
+    $btn.css("background", "var(--success-color)").css("color", "#fff").text("EXECUTING...");
+    
+    setTimeout(() => {
+         $btn.text("AUTHORIZED");
+         $card.css("opacity", "0.6");
+    }, 1500);
+    
+    console.log(`Command Center: User authorized ${strategyId} for ${targetName}`);
+};
 
 // jQuery Events
 $("#status-panel").on("click", () => {

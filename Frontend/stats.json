@@ -57,8 +57,8 @@
     "140": {
       "name": "Central African Republic",
       "pop": 6470307,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 53,
+      "infected": 6861
     },
     "144": {
       "name": "Sri Lanka",
@@ -81,8 +81,8 @@
     "156": {
       "name": "China",
       "pop": 1408280000,
-      "gdp": 17700,
-      "infected": 50000
+      "gdp": 380,
+      "infected": 137961795
     },
     "158": {
       "name": "Taiwan",
@@ -105,8 +105,8 @@
     "170": {
       "name": "Colombia",
       "pop": 53057212,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 82,
+      "infected": 48537
     },
     "174": {
       "name": "Comoros",
@@ -141,8 +141,8 @@
     "188": {
       "name": "Costa Rica",
       "pop": 5309625,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 230,
+      "infected": 5312
     },
     "191": {
       "name": "Croatia",
@@ -165,8 +165,8 @@
     "203": {
       "name": "Czechia",
       "pop": 10882341,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 81,
+      "infected": 10421
     },
     "204": {
       "name": "Benin",
@@ -213,14 +213,14 @@
     "231": {
       "name": "Ethiopia",
       "pop": 111652998,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 376,
+      "infected": 119934
     },
     "232": {
       "name": "Eritrea",
       "pop": 3607000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 452,
+      "infected": 4113
     },
     "233": {
       "name": "Estonia",
@@ -231,14 +231,14 @@
     "234": {
       "name": "Faroe Islands",
       "pop": 54885,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 433,
+      "infected": 62
     },
     "238": {
       "name": "Falkland Islands",
       "pop": 3662,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 463,
+      "infected": 3
     },
     "239": {
       "name": "South Georgia",
@@ -249,14 +249,14 @@
     "242": {
       "name": "Fiji",
       "pop": 900869,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 442,
+      "infected": 752
     },
     "246": {
       "name": "Finland",
       "pop": 5650325,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 116,
+      "infected": 5061
     },
     "248": {
       "name": "Åland Islands",
@@ -267,14 +267,14 @@
     "250": {
       "name": "France",
       "pop": 66351959,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 416,
+      "infected": 2420313
     },
     "254": {
       "name": "French Guiana",
       "pop": 292354,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 379,
+      "infected": 370
     },
     "258": {
       "name": "French Polynesia",
@@ -297,8 +297,8 @@
     "266": {
       "name": "Gabon",
       "pop": 2469296,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 60,
+      "infected": 2450
     },
     "268": {
       "name": "Georgia",
@@ -321,8 +321,8 @@
     "276": {
       "name": "Germany",
       "pop": 83491249,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 111,
+      "infected": 2217951
     },
     "288": {
       "name": "Ghana",
@@ -333,8 +333,8 @@
     "292": {
       "name": "Gibraltar",
       "pop": 38000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 243,
+      "infected": 41
     },
     "296": {
       "name": "Kiribati",
@@ -369,8 +369,8 @@
     "316": {
       "name": "Guam",
       "pop": 153836,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 107,
+      "infected": 118
     },
     "320": {
       "name": "Guatemala",
@@ -411,8 +411,8 @@
     "340": {
       "name": "Honduras",
       "pop": 9892632,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 428,
+      "infected": 12564
     },
     "344": {
       "name": "Hong Kong",
@@ -453,8 +453,8 @@
     "368": {
       "name": "Iraq",
       "pop": 46118793,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 320,
+      "infected": 515796
     },
     "372": {
       "name": "Ireland",
@@ -471,8 +471,8 @@
     "380": {
       "name": "Italy",
       "pop": 58927633,
-      "gdp": 2100,
-      "infected": 200000
+      "gdp": 352,
+      "infected": 1984940
     },
     "384": {
       "name": "Ivory Coast",
@@ -483,14 +483,14 @@
     "388": {
       "name": "Jamaica",
       "pop": 2825544,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 242,
+      "infected": 3131
     },
     "392": {
       "name": "Japan",
       "pop": 123210000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 398,
+      "infected": 4434396
     },
     "398": {
       "name": "Kazakhstan",
@@ -525,20 +525,20 @@
     "414": {
       "name": "Kuwait",
       "pop": 4881254,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 127,
+      "infected": 85391
     },
     "417": {
       "name": "Kyrgyzstan",
       "pop": 7281800,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 73,
+      "infected": 7396
     },
     "418": {
       "name": "Laos",
       "pop": 7647000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 377,
+      "infected": 6226
     },
     "422": {
       "name": "Lebanon",
@@ -699,8 +699,8 @@
     "512": {
       "name": "Oman",
       "pop": 5343630,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 331,
+      "infected": 58640
     },
     "516": {
       "name": "Namibia",
@@ -771,8 +771,8 @@
     "558": {
       "name": "Nicaragua",
       "pop": 6803886,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 498,
+      "infected": 8136
     },
     "562": {
       "name": "Niger",
@@ -837,8 +837,8 @@
     "586": {
       "name": "Pakistan",
       "pop": 241499431,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 520,
+      "infected": 226920
     },
     "591": {
       "name": "Panama",
@@ -861,8 +861,8 @@
     "604": {
       "name": "Peru",
       "pop": 34350244,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 140,
+      "infected": 24110
     },
     "608": {
       "name": "Philippines",
@@ -897,8 +897,8 @@
     "626": {
       "name": "Timor-Leste",
       "pop": 1391221,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 483,
+      "infected": 1751
     },
     "630": {
       "name": "Puerto Rico",
@@ -921,26 +921,26 @@
     "642": {
       "name": "Romania",
       "pop": 19036031,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 342,
+      "infected": 19139
     },
     "643": {
       "name": "Russia",
       "pop": 146028325,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 270,
+      "infected": 4583127
     },
     "646": {
       "name": "Rwanda",
       "pop": 14104969,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 80,
+      "infected": 15699
     },
     "652": {
       "name": "Saint Barthélemy",
       "pop": 10562,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 434,
+      "infected": 10
     },
     "654": {
       "name": "Saint Helena, Ascension and Tristan da Cunha",
@@ -957,8 +957,8 @@
     "660": {
       "name": "Anguilla",
       "pop": 16010,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 224,
+      "infected": 15
     },
     "662": {
       "name": "Saint Lucia",
@@ -999,8 +999,8 @@
     "682": {
       "name": "Saudi Arabia",
       "pop": 35300280,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 469,
+      "infected": 682397
     },
     "686": {
       "name": "Senegal",
@@ -1041,8 +1041,8 @@
     "704": {
       "name": "Vietnam",
       "pop": 101343800,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 549,
+      "infected": 120020
     },
     "705": {
       "name": "Slovenia",
@@ -1065,14 +1065,14 @@
     "716": {
       "name": "Zimbabwe",
       "pop": 17073087,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 182,
+      "infected": 12544
     },
     "724": {
       "name": "Spain",
       "pop": 49315949,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 175,
+      "infected": 1859257
     },
     "728": {
       "name": "South Sudan",
@@ -1089,14 +1089,14 @@
     "732": {
       "name": "Western Sahara",
       "pop": 600904,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 148,
+      "infected": 517
     },
     "740": {
       "name": "Suriname",
       "pop": 616500,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 479,
+      "infected": 765
     },
     "744": {
       "name": "Svalbard and Jan Mayen",
@@ -1125,8 +1125,8 @@
     "760": {
       "name": "Syria",
       "pop": 25620000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 500,
+      "infected": 31369
     },
     "762": {
       "name": "Tajikistan",
@@ -1149,8 +1149,8 @@
     "772": {
       "name": "Tokelau",
       "pop": 2608,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 198,
+      "infected": 3
     },
     "776": {
       "name": "Tonga",
@@ -1168,7 +1168,7 @@
       "name": "United Arab Emirates",
       "pop": 11294243,
       "gdp": 415,
-      "infected": 1200
+      "infected": 15420
     },
     "788": {
       "name": "Tunisia",
@@ -1179,8 +1179,8 @@
     "792": {
       "name": "Turkey",
       "pop": 85664944,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 111,
+      "infected": 94968
     },
     "795": {
       "name": "Turkmenistan",
@@ -1203,8 +1203,8 @@
     "800": {
       "name": "Uganda",
       "pop": 45905417,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 165,
+      "infected": 39682
     },
     "804": {
       "name": "Ukraine",
@@ -1227,8 +1227,8 @@
     "826": {
       "name": "United Kingdom",
       "pop": 69281437,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 118,
+      "infected": 2127260
     },
     "831": {
       "name": "Guernsey",
@@ -1239,8 +1239,8 @@
     "832": {
       "name": "Jersey",
       "pop": 103267,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 538,
+      "infected": 132
     },
     "833": {
       "name": "Isle of Man",
@@ -1257,8 +1257,8 @@
     "840": {
       "name": "United States",
       "pop": 340110988,
-      "gdp": 23000,
-      "infected": 1500000
+      "gdp": 111,
+      "infected": 12400211
     },
     "850": {
       "name": "United States Virgin Islands",
@@ -1311,8 +1311,8 @@
     "894": {
       "name": "Zambia",
       "pop": 19693423,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 267,
+      "infected": 24786
     },
     "056": {
       "name": "Belgium",
@@ -1335,8 +1335,8 @@
     "092": {
       "name": "British Virgin Islands",
       "pop": 39471,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 275,
+      "infected": 46
     },
     "064": {
       "name": "Bhutan",
@@ -1353,8 +1353,8 @@
     "040": {
       "name": "Austria",
       "pop": 9200931,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 342,
+      "infected": 11726
     },
     "050": {
       "name": "Bangladesh",
@@ -1371,14 +1371,14 @@
     "024": {
       "name": "Angola",
       "pop": 36170961,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 153,
+      "infected": 39316
     },
     "048": {
       "name": "Bahrain",
       "pop": 1594654,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 239,
+      "infected": 30476
     },
     "052": {
       "name": "Barbados",
@@ -1389,8 +1389,8 @@
     "070": {
       "name": "Bosnia and Herzegovina",
       "pop": 3422000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 232,
+      "infected": 3836
     },
     "004": {
       "name": "Afghanistan",
@@ -1425,8 +1425,8 @@
     "084": {
       "name": "Belize",
       "pop": 417634,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 122,
+      "infected": 355
     },
     "032": {
       "name": "Argentina",
@@ -1449,8 +1449,8 @@
     "010": {
       "name": "Antarctica",
       "pop": 1300,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 468,
+      "infected": 1
     },
     "028": {
       "name": "Antigua and Barbuda",
