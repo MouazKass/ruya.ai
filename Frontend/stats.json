@@ -81,8 +81,8 @@
     "156": {
       "name": "China",
       "pop": 1408280000,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 17700,
+      "infected": 50000
     },
     "158": {
       "name": "Taiwan",
@@ -471,8 +471,8 @@
     "380": {
       "name": "Italy",
       "pop": 58927633,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 2100,
+      "infected": 200000
     },
     "384": {
       "name": "Ivory Coast",
@@ -1167,8 +1167,8 @@
     "784": {
       "name": "United Arab Emirates",
       "pop": 11294243,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 415,
+      "infected": 1200
     },
     "788": {
       "name": "Tunisia",
@@ -1257,8 +1257,8 @@
     "840": {
       "name": "United States",
       "pop": 340110988,
-      "gdp": 0,
-      "infected": 0
+      "gdp": 23000,
+      "infected": 1500000
     },
     "850": {
       "name": "United States Virgin Islands",

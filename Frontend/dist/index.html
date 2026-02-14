@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandemic Command Center v5</title>
+    
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    
+    <!-- Linked CSS -->
+  <script type="module" crossorigin src="/assets/index-BYB3v0JL.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-SuO5IKpj.css">
+</head>
+<body>
+
+<div id="container">
+
+    <div id="left-sidebar">
+        <div id="status-panel" class="glass-panel" title="Click for Detailed Disease Report">
+            <div class="panel-header">
+                <span class="panel-title">Active Cases</span>
+                <span style="font-size: 1.2rem;">⤢</span>
+            </div>
+            <div class="status-main" id="status-count">---</div>
+            <div class="status-sub" id="status-label">Global Aggregate</div>
+        </div>
+
+        <div id="rec-list" class="glass-panel">
+            <div class="panel-header" style="justify-content: flex-start; margin-bottom: 12px;">
+                <span class="ai-indicator"></span>
+                <span class="panel-title">Live AI Analysis</span>
+            </div>
+            <div id="alerts-container">
+                </div>
+        </div>
+
+        <div id="action-list" class="glass-panel">
+            <div class="panel-title" style="margin-bottom:5px;">Recommended Actions</div>
+            <div id="actions-container">
+                </div>
+        </div>
+    </div>
+
+    <div id="status-modal">
+        <div class="modal-close" id="close-modal">×</div>
+        <div style="border-bottom: 1px solid var(--text-secondary); padding-bottom: 15px; margin-bottom:10px;">
+            <h1 style="margin:0; font-size:1.8rem;">Pathogen Analysis Report</h1>
+            <span id="modal-region-name" style="color:var(--accent-color); font-weight:600;">Global View</span>
+        </div>
+        <div class="modal-grid">
+            <div class="info-card">
+                <h3>Reported Symptoms</h3>
+                <div id="symptom-list"></div>
+            </div>
+            <div class="info-card">
+                <h3>Regional Transmission Risks</h3>
+                <div style="margin-bottom:10px; font-size:0.8rem; color:var(--text-secondary);">Top Vectors by Volume:</div>
+                <div id="neighbor-list"></div>
+            </div>
+            <div class="info-card" style="grid-column: span 2; display:flex; justify-content:space-around; align-items:center;">
+                <div style="text-align:center;">
+                    <div style="font-size:0.8rem; color:var(--text-secondary); text-transform:uppercase;">Transmission (R0)</div>
+                    <div style="font-size:2.5rem; font-weight:700; color:var(--warning-color);" id="metric-r0">--</div>
+                </div>
+                <div style="width:1px; height:50px; background:rgba(128,128,128,0.3);"></div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.8rem; color:var(--text-secondary); text-transform:uppercase;">Fatality Rate</div>
+                    <div style="font-size:2.5rem; font-weight:700; color:var(--danger-color);" id="metric-cfr">--%</div>
+                </div>
+                <div style="width:1px; height:50px; background:rgba(128,128,128,0.3);"></div>
+                 <div style="text-align:center;">
+                    <div style="font-size:0.8rem; color:var(--text-secondary); text-transform:uppercase;">Healthcare Load</div>
+                    <div style="font-size:2.5rem; font-weight:700; color:var(--accent-color);" id="metric-load">--%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls-area">
+        <div id="btn-theme" class="icon-btn"><span id="theme-icon">☾</span></div>
+        <div id="btn-reset" class="icon-btn"><span>⟲</span></div>
+    </div>
+
+    <div id="bottom-panel">
+        <div class="country-header">
+            <h2 id="dash-name">Select Location</h2>
+            <p id="dash-sub">Global View</p>
+        </div>
+        <div class="stats-container">
+            <div class="stat-item"><span class="stat-label" id="lbl-1">Population</span><span class="stat-value" id="val-1">---</span></div>
+            <div class="stat-item"><span class="stat-label" id="lbl-2">GDP (USD)</span><span class="stat-value" id="val-2">---</span></div>
+            <div class="stat-item"><span class="stat-label" id="lbl-3">Active Cases</span><span class="stat-value" id="val-3">---</span></div>
+            <div class="stat-item"><span class="stat-label" id="lbl-4">Risk Level</span><span class="stat-value" id="val-4">---</span></div>
+        </div>
+        <div id="news-action" title="View News Reports">📰</div>
+    </div>
+
+    <div id="map-wrapper"></div>
+    <div id="tooltip"></div>
+
+</div>
+
+<!-- Application Logic -->
+
+</body>
+</html>
