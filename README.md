@@ -1,4 +1,4 @@
-SENTINEL — Self-Improving Pandemic Early Warning System
+<h1 align="center"> SENTINEL - Self-Improving Pandemic Early Warning System </h1>
 
 SENTINEL is a multi-agent early warning system that detects emerging outbreak signals by fusing genomic, epidemiological/OSINT, and geospatial indicators. It improves over time by evaluating each run against ground truth, updating fusion weights, and refining agent strategies. Alerts are never dispatched without explicit human approval through a Ministry of Health (MoH) dashboard.
 
@@ -30,11 +30,15 @@ KEY GUARANTEES
 - Explainable decisions: threat score includes agent contributions and rationale.
 - Auditable: all inputs, outputs, and decisions are stored in ClickHouse.
 
-SYSTEM ARCHITECTURE (HIGH LEVEL)
+SYSTEM ARCHITECTURE
 1) Input Sources → Ingest & Normalize → ClickHouse
 2) RAG Retrieval (cases + ClickHouse index + strategy memory) → Agents
 3) Meta-Agent → Guardrail → MoH Dashboard → Human Approval → Dispatch
 4) Evaluation + updates → Strategy Memory → back into RAG for the next run
+
+<div align="center">
+<img width="497" height="1115" alt="image" src="https://github.com/user-attachments/assets/3e489f6a-35cd-433d-99c7-b4d0f1699893" />
+</div>
 
 METRICS (MEASURABLE IMPROVEMENT)
 Tracked per run and shown on the dashboard:
@@ -57,7 +61,7 @@ Default thresholds:
 - Confidence ≥ 60%
 Guardrails only decide if a case is eligible for review. Dispatch still requires human approval.
 
-TECH STACK (SUGGESTED)
+TECH STACK
 - Backend: FastAPI
 - Agents: LLM-powered specialist agents + meta-agent orchestrator
 - Storage + analytics: ClickHouse
