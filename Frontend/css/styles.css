@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom theme variables if needed, but we can stick to root for now or move them inside theme */
+}
+
+/* --- CSS VARIABLES --- */
+:root {
+    --bg-color: #f0f2f5;
+    --map-sea-color: #dbeafe;
+    --country-fill: #cbd5e1;
+    --country-stroke: #ffffff;
+    --country-hover: #94a3b8;
+    --country-active: #475569;
+    
+    --text-main: #1e293b;
+    --text-secondary: #64748b;
+    
+    --panel-bg: rgba(255, 255, 255, 0.9);
+    --panel-border: 1px solid rgba(255, 255, 255, 0.6);
+    --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    --city-fill: #ffc107;
+    --city-stroke: #ffffff;
+    --city-hover: #ff9800;
+    
+    --accent-color: #2563eb;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --success-color: #10b981;
+    
+    --card-bg: rgba(255,255,255,0.5);
+    --ai-pulse: #2563eb;
+
+    /* Route Colors */
+    --flight-color: #dc2626; 
+    --ship-color: #0284c7;   
+}
+
+[data-theme="night"] {
+    --bg-color: #0f172a;
+    --map-sea-color: #0f172a;
+    --country-fill: #1e293b;
+    --country-stroke: #334155;
+    --country-hover: #334155;
+    --country-active: #475569;
+    
+    --text-main: #f8fafc;
+    --text-secondary: #94a3b8;
+    
+    --panel-bg: rgba(15, 23, 42, 0.9);
+    --panel-border: 1px solid rgba(255, 255, 255, 0.1);
+    --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    
+    --city-fill: #ffd54f;
+    --city-stroke: #1e293b;
+    --city-hover: #ffecb3;
+    
+    --accent-color: #60a5fa;
+    --card-bg: rgba(255,255,255,0.05);
+    --ai-pulse: #60a5fa;
+    
+    --flight-color: #f87171;
+    --ship-color: #38bdf8;
+}
+
+/* --- LAYOUT --- */
+body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--map-sea-color); color: var(--text-main); transition: background 0.5s; }
+#container { position: relative; width: 100vw; height: 100vh; }
+
+/* --- MAP & CURSOR --- */
+#map-wrapper { width: 100%; height: 100%; cursor: default; }
+svg { display: block; width: 100%; height: 100%; }
+
+/* --- LEFT SIDEBAR --- */
+#left-sidebar {
+    position: absolute; top: 20px; left: 20px; bottom: 160px;
+    width: 320px;
+    display: flex; flex-direction: column; gap: 15px;
+    pointer-events: none;
+}
+
+.glass-panel {
+    background-color: var(--panel-bg);
+    border: var(--panel-border);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    box-shadow: var(--panel-shadow);
+    pointer-events: auto;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+/* 1. STATUS PANEL */
+#status-panel { cursor: pointer; border-left: 6px solid var(--success-color); }
+#status-panel:hover { transform: scale(1.02); }
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.panel-title { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; }
+.status-main { font-size: 2rem; font-weight: 700; color: var(--text-main); line-height: 1; }
+.status-sub { font-size: 0.9rem; font-weight: 600; margin-top: 4px; color: var(--success-color); transition: color 0.3s; }
+
+/* 2. AI ALERTS LIST */
+#rec-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+#rec-list::-webkit-scrollbar { width: 4px; }
+#rec-list::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 4px; }
+
+/* AI Pulse Animation */
+.ai-indicator {
+    width: 8px; height: 8px; background-color: var(--ai-pulse);
+    border-radius: 50%; display: inline-block; margin-right: 8px;
+    box-shadow: 0 0 0 rgba(37, 99, 235, 0.4);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.rec-item { background: var(--card-bg); padding: 10px; border-radius: 8px; border-left: 3px solid var(--text-secondary); font-size: 0.9rem; animation: fadeIn 0.3s ease; }
+.rec-head { font-weight: 600; margin-bottom: 4px; display:flex; justify-content:space-between; font-size: 0.85rem;}
+.rec-body { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
+
+/* 3. ACTION CARDS */
+#action-list { display: flex; flex-direction: column; gap: 10px; min-height: 180px; }
+.action-card { 
+    background: var(--card-bg); padding: 12px; border-radius: 8px; 
+    display: flex; align-items: center; gap: 12px; cursor: pointer; 
+    transition: all 0.2s; border: 1px solid transparent; animation: slideIn 0.3s ease;
+}
+.action-card:hover { background: rgba(128,128,128,0.1); border-color: var(--accent-color); transform: translateX(5px); }
+.action-icon { font-size: 1.2rem; }
+.action-text { font-weight: 600; font-size: 0.9rem; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* --- MODAL --- */
+#status-modal {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+    width: 65%; height: 70%; background: var(--panel-bg); border: var(--panel-border);
+    backdrop-filter: blur(25px); border-radius: 16px; z-index: 100;
+    opacity: 0; pointer-events: none; transition: all 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4); display: flex; flex-direction: column; padding: 30px;
+}
+#status-modal.visible { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+.modal-close { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; gap: 20px; margin-top: 20px; height: 100%; overflow-y: auto; }
+.info-card { background: rgba(128,128,128,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(128,128,128,0.1); }
+.symptom-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.9rem; }
+.sym-bar-bg { flex: 1; height: 8px; background: rgba(128,128,128,0.2); border-radius: 4px; overflow: hidden; margin: 0 10px;}
+.sym-bar-fill { height: 100%; background: var(--danger-color); }
+.risk-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(128,128,128,0.1); font-size: 0.9rem; }
+
+/* --- BOTTOM & CONTROLS --- */
+#controls-area { position: absolute; bottom: 160px; right: 30px; display: flex; flex-direction: column; gap: 10px; z-index: 20; }
+.icon-btn { width: 44px; height: 44px; border-radius: 50%; border: var(--panel-border); background-color: var(--panel-bg); color: var(--text-main); box-shadow: var(--panel-shadow); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; }
+.icon-btn:hover { transform: scale(1.1); }
+
+#bottom-panel { position: absolute; bottom: 20px; left: 20px; right: 20px; height: 120px; background-color: var(--panel-bg); border: var(--panel-border); backdrop-filter: blur(12px); border-radius: 16px; box-shadow: var(--panel-shadow); z-index: 10; display: flex; align-items: center; padding: 0 30px; gap: 30px; }
+.country-header { min-width: 220px; border-right: 1px solid var(--text-secondary); padding-right: 20px; }
+.country-header h2 { margin: 0; font-size: 1.8rem; color: var(--accent-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.country-header p { margin: 5px 0 0 0; color: var(--text-secondary); font-size: 0.9rem; }
+.stats-container { display: flex; flex: 1; justify-content: space-around; }
+.stat-item { display: flex; flex-direction: column; gap: 4px; }
+.stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 600; }
+.stat-value { font-size: 1.3rem; font-weight: 600; color: var(--text-main); }
+
+#news-action { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-secondary); border-left: 1px solid var(--text-secondary); padding-left: 30px; opacity: 0; pointer-events: none; transition: all 0.3s; cursor: pointer; }
+#news-action.visible { opacity: 1; pointer-events: auto; }
+#news-action:hover { color: var(--accent-color); transform: scale(1.1); }
+
+/* Map Styles */
+#tooltip { position: absolute; opacity: 0; background: rgba(0, 0, 0, 0.9); color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; pointer-events: none; transform: translate(-50%, -150%); transition: opacity 0.1s; z-index: 200; white-space: nowrap; }
+.country { fill: var(--country-fill); stroke: var(--country-stroke); stroke-width: 0.5px; transition: fill 0.2s; }
+.country:hover { fill: var(--country-hover); cursor: pointer; }
+.country.active { fill: var(--country-active); }
+.city-marker { fill: var(--city-fill); stroke: var(--city-stroke); stroke-width: 1.5px; transition: r 0.2s; cursor: pointer; }
+.city-marker:hover { fill: var(--city-hover); }
+
+/* --- VECTOR LINES (Animation) --- */
+.route-line { fill: none; stroke-linecap: round; opacity: 0.4; pointer-events: none; }
+
+.flight-path { 
+    stroke: var(--flight-color); 
+    stroke-width: 1px; 
+    stroke-dasharray: 2, 4;
+}
+
+.ship-path { 
+    stroke: var(--ship-color); 
+    stroke-width: 1.5px; 
+}
+
+.vehicle-icon { pointer-events: none; }
+.port-icon { fill: var(--ship-color); pointer-events: none; opacity: 0.8; }
+
+/* Specific styling for UAE */
+.country[data-id="784"] {
+    fill: var(--accent-color) !important;
+    stroke: var(--accent-color);
+    stroke-width: 1px;
+    filter: drop-shadow(0 0 5px var(--accent-color));
+}
+
+/* Severity Shading for Selected Countries */
+.country.selected-stable { fill: var(--success-color) !important; fill-opacity: 0.6; }
+.country.selected-elevated { fill: var(--warning-color) !important; fill-opacity: 0.6; }
+.country.selected-critical { fill: var(--danger-color) !important; fill-opacity: 0.6; }
+
+/* Transition for smooth shading */
+.country { transition: fill 0.4s ease, fill-opacity 0.4s ease; }
