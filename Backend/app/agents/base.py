@@ -68,13 +68,16 @@ class AgentBase:
         rag_context: dict[str, Any] | None,
         strategy_notes: list[str] | None,
     ) -> str:
-        return (
+        # Use compact JSON (no indent) to reduce token count
+        prompt = (
             f"{self.prompt_template}\n\n"
-            f"Output schema:\n{json.dumps(self.output_model.model_json_schema(), indent=2)}\n\n"
-            f"Payload JSON:\n{json.dumps(payload, indent=2, default=str)}\n\n"
-            f"RAG JSON:\n{json.dumps(rag_context or {}, indent=2, default=str)}\n\n"
-            f"Strategy notes:\n{json.dumps(strategy_notes or [], indent=2, default=str)}"
+            f"Output schema:\n{json.dumps(self.output_model.model_json_schema())}\n\n"
+            f"Payload JSON:\n{json.dumps(payload, default=str)}\n\n"
+            f"RAG JSON:\n{json.dumps(rag_context or {}, default=str)}\n\n"
+            f"Strategy notes:\n{json.dumps(strategy_notes or [], default=str)}"
         )
+        LOGGER.debug("%s prompt size: %d chars", self.agent_name, len(prompt))
+        return prompt
 
     async def _run_bedrock_with_repair(self, prompt: str) -> dict[str, Any] | None:
         raw = await asyncio.to_thread(self._invoke_with_retry, prompt)
@@ -105,27 +108,58 @@ class AgentBase:
         raise RuntimeError("Unreachable")
 
     def _invoke_bedrock(self, prompt: str) -> str:
-        body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": self.settings.bedrock_max_tokens,
-            "temperature": 0.1,
-            "messages": [{"role": "user", "content": prompt}],
-        }
+        model_id = self._model_id
+
+        # ---------- build request body per provider ----------
+        if "amazon.nova" in model_id:
+            body: dict = {
+                "schemaVersion": "messages-v1",
+                "messages": [{"role": "user", "content": [{"text": prompt}]}],
+                "inferenceConfig": {
+                    "maxTokens": self.settings.bedrock_max_tokens,
+                    "temperature": 0.1,
+                },
+            }
+        else:
+            # Anthropic / Claude format
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": self.settings.bedrock_max_tokens,
+                "temperature": 0.1,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+
         response = self._bedrock.invoke_model(
-            modelId=self._model_id,
+            modelId=model_id,
             contentType="application/json",
             accept="application/json",
             body=json.dumps(body),
         )
         payload = json.loads(response["body"].read())
 
+        # ---------- parse response per provider ----------
+
+        # Amazon Nova: {"output":{"message":{"content":[{"text":"..."}]}}}
+        if isinstance(payload.get("output"), dict):
+            msg = payload["output"].get("message", {})
+            content = msg.get("content", [])
+            parts: list[str] = [
+                block["text"]
+                for block in content
+                if isinstance(block, dict) and block.get("text")
+            ]
+            if parts:
+                return "\n".join(parts)
+
+        # Anthropic: {"content":[{"text":"..."}]}
         if isinstance(payload.get("content"), list):
-            parts: list[str] = []
+            parts = []
             for block in payload["content"]:
                 if isinstance(block, dict) and block.get("text"):
                     parts.append(block["text"])
             return "\n".join(parts)
 
+        # Titan / other
         if isinstance(payload.get("results"), list) and payload["results"]:
             first = payload["results"][0]
             text = first.get("outputText") if isinstance(first, dict) else None

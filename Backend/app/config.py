@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     port: int = 8000
 
     api_prefix: str = "/api"
-    cors_origins: str = "*"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     clickhouse_host: str = "clickhouse"
     clickhouse_port: int = 8123
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     aws_session_token: str = ""
 
     use_bedrock: bool = False
-    bedrock_chat_model_id: str = "anthropic.claude-opus-4-5-20251101-v1:0"
+    bedrock_chat_model_id: str = "us.amazon.nova-premier-v1:0"
     bedrock_max_tokens: int = 4096
 
     def boto3_credentials(self) -> dict[str, str]:
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     embedding_dim: int = 1024
 
     use_rerank: bool = False
-    bedrock_rerank_model_id: str = "cohere.rerank-v3-5:0"
+    bedrock_rerank_model_id: str = "amazon.rerank-v1:0"
 
     dispatch_dry_run: bool = True
 
