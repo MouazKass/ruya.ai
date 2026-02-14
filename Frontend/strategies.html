@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Strategies — Pandemic Command Center</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body data-theme="night">
+
+    <div id="strategies-page">
+
+        <!-- PAGE HEADER -->
+        <div class="strategies-header">
+            <div>
+                <h1 class="strategies-title">Agent Strategies</h1>
+                <p class="strategies-subtitle">AI-driven response protocols &amp; strategic reasoning for the current
+                    threat landscape</p>
+            </div>
+            <div class="strategies-legend">
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:var(--danger-color)"></span>
+                    <span>Critical (&gt;5% infection rate)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:var(--warning-color)"></span>
+                    <span>High (1–5%)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:var(--accent-color)"></span>
+                    <span>Moderate (0.1–1%)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:var(--success-color)"></span>
+                    <span>Low (&lt;0.1%)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STRATEGY CARDS -->
+        <div class="strategies-grid" id="strategies-grid">
+            <!-- Injected by JS -->
+        </div>
+
+    </div>
+
+    <!-- RIGHT SIDE NAVIGATION -->
+    <nav class="side-nav" id="side-nav"></nav>
+
+    <script type="module" src="./js/strategies.js"></script>
+
+</body>
+
+</html>

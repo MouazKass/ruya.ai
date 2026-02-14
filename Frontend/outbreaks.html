@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previous Outbreaks — Pandemic Command Center</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body data-theme="night">
+
+    <div id="outbreaks-page">
+
+        <!-- PAGE HEADER -->
+        <div class="outbreaks-header">
+            <div>
+                <h1 class="outbreaks-title">Previous Outbreaks</h1>
+                <p class="outbreaks-subtitle">Historical pathogen records &amp; containment outcomes</p>
+            </div>
+            <div class="outbreaks-stats">
+                <div class="outbreak-stat">
+                    <span class="stat-number" id="total-outbreaks">--</span>
+                    <span class="stat-desc">Total Records</span>
+                </div>
+                <div class="outbreak-stat">
+                    <span class="stat-number" style="color:var(--success-color)" id="contained-count">--</span>
+                    <span class="stat-desc">Contained</span>
+                </div>
+                <div class="outbreak-stat">
+                    <span class="stat-number" style="color:var(--danger-color)" id="active-count">--</span>
+                    <span class="stat-desc">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="outbreaks-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="contained">Contained</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="critical">Critical</button>
+        </div>
+
+        <!-- CARDS GRID -->
+        <div class="outbreaks-grid" id="outbreaks-grid">
+            <!-- Cards injected by JS -->
+        </div>
+
+    </div>
+
+    <!-- RIGHT SIDE NAVIGATION -->
+    <nav class="side-nav" id="side-nav">
+        <!-- Injected by shared nav JS -->
+    </nav>
+
+    <script type="module" src="./js/outbreaks.js"></script>
+
+</body>
+
+</html>

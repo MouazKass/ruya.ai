@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { initSideNav } from './nav.js';
 
 // --- 1. DATA INFRASTRUCTURE ---
 const config = {
@@ -98,7 +99,7 @@ function determineStatus(infected, pop) {
 // --- 3. D3 & RENDER LOGIC ---
 let width = window.innerWidth, height = window.innerHeight;
 let activeCountry = d3.select(null);
-let isNightMode = false;
+let isNightMode = true;
 
 const svg = d3.select("#map-wrapper").append("svg").attr("viewBox", [0, 0, width, height]).on("click", resetView);
 const defs = svg.append("defs");
@@ -690,3 +691,6 @@ $(window).on("resize", () => {
     height = window.innerHeight;
     svg.attr("viewBox", [0, 0, width, height]);
 });
+
+// --- SIDE NAVIGATION ---
+initSideNav("dashboard");

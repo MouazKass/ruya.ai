@@ -4,6 +4,13 @@
     /* Custom theme variables if needed, but we can stick to root for now or move them inside theme */
 }
 
+/* Allow scrolling on secondary pages */
+body:has(#strategies-page),
+body:has(#outbreaks-page) {
+    overflow-y: auto;
+    height: auto;
+}
+
 /* --- CSS VARIABLES --- */
 :root {
     --bg-color: #f0f2f5;
@@ -506,6 +513,7 @@ svg {
     align-items: center;
     margin-bottom: 8px;
     font-size: 0.9rem;
+    margin-top: 10px
 }
 
 .sym-bar-bg {
@@ -771,4 +779,521 @@ svg {
     100% {
         opacity: 0.85;
     }
+}
+
+/* ============================================
+   RIGHT SIDE NAVIGATION (Glassmorphism Pill)
+   ============================================ */
+.side-nav {
+    position: fixed;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9999;
+}
+
+.side-nav-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    padding: 14px 10px;
+    border-radius: 24px;
+    background: rgba(30, 34, 45, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="day"] .side-nav-inner {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(226, 232, 240, 0.7);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.side-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.side-nav-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-main);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.side-nav-item.active {
+    border-color: rgba(37, 99, 235, 0.5);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));
+    color: var(--accent-color);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+}
+
+.side-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.side-nav-tooltip {
+    position: absolute;
+    right: calc(100% + 12px);
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--panel-bg);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(6px);
+    transition: all 0.2s ease;
+    min-width: 130px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.side-nav-item:hover .side-nav-tooltip {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.side-nav-tooltip-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.side-nav-tooltip-meta {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* ============================================
+   OUTBREAKS PAGE
+   ============================================ */
+#outbreaks-page {
+    min-height: 100vh;
+    padding: 40px 80px 40px 40px;
+    overflow-y: auto;
+    background: var(--map-sea-color);
+}
+
+.outbreaks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+.outbreaks-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+
+.outbreaks-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 4px 0 0 0;
+    letter-spacing: 0.3px;
+}
+
+.outbreaks-stats {
+    display: flex;
+    gap: 28px;
+}
+
+.outbreak-stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.stat-desc {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+/* --- FILTER BAR --- */
+.outbreaks-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.filter-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+}
+
+.filter-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.filter-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+/* --- CARDS GRID --- */
+.outbreaks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}
+
+.outbreak-card {
+    background: var(--panel-bg);
+    border: 1px solid rgba(128, 128, 128, 0.12);
+    border-radius: 16px;
+    padding: 22px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+    animation: cardFadeIn 0.4s ease both;
+}
+
+.outbreak-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+    border-color: rgba(37, 99, 235, 0.3);
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.outbreak-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.outbreak-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--accent-color);
+}
+
+.outbreak-card-title h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.outbreak-year {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.outbreak-status-badge {
+    margin-left: auto;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: white;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.outbreak-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+}
+
+.outbreak-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.outbreak-metric {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: rgba(128, 128, 128, 0.06);
+}
+
+.metric-label {
+    display: block;
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.outbreak-severity-bar {
+    height: 3px;
+    border-radius: 3px;
+    background: rgba(128, 128, 128, 0.1);
+    overflow: hidden;
+}
+
+.severity-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+/* ============================================
+   STRATEGIES PAGE
+   ============================================ */
+#strategies-page {
+    min-height: 100vh;
+    padding: 40px 80px 40px 40px;
+    overflow-y: auto;
+    background: var(--map-sea-color);
+}
+
+.strategies-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+.strategies-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+
+.strategies-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 4px 0 0 0;
+    letter-spacing: 0.3px;
+}
+
+.strategies-legend {
+    display: flex;
+    gap: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* --- STRATEGY GRID --- */
+.strategies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.strategy-card {
+    background: var(--panel-bg);
+    border: 1px solid rgba(128, 128, 128, 0.12);
+    border-radius: 14px;
+    padding: 22px 22px 18px 22px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+    animation: cardFadeIn 0.4s ease both;
+}
+
+.strategy-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+.strategy-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.strategy-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.strategy-card-title {
+    flex: 1;
+}
+
+.strategy-category {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.strategy-card-title h3 {
+    margin: 2px 0 0 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.strategy-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: rgba(128, 128, 128, 0.06);
+    color: var(--text-secondary);
+    font-size: 0.68rem;
+    margin-bottom: 12px;
+}
+
+.strategy-trigger svg {
+    flex-shrink: 0;
+    color: var(--warning-color);
+}
+
+.strategy-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0 0 16px 0;
+}
+
+.strategy-reasoning {
+    margin-bottom: 16px;
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(128, 128, 128, 0.04);
+    border: 1px solid rgba(128, 128, 128, 0.08);
+}
+
+.reasoning-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.reasoning-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+    color: var(--text-main);
+    line-height: 1.45;
+}
+
+.reasoning-point:last-child {
+    margin-bottom: 0;
+}
+
+.reasoning-point svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.strategy-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.strategy-metric {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: rgba(128, 128, 128, 0.06);
+}
+
+.sm-label {
+    display: block;
+    font-size: 0.58rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+}
+
+.sm-value {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
 }
