@@ -37,7 +37,7 @@ SYSTEM ARCHITECTURE
 4) Evaluation + updates → Strategy Memory → back into RAG for the next run
 
 <div align="center">
-<img width="497" height="1115" alt="image" src="https://github.com/user-attachments/assets/3e489f6a-35cd-433d-99c7-b4d0f1699893" />
+<img width="505" height="1113" alt="image" src="https://github.com/user-attachments/assets/426bc0c0-81ed-4dae-a61f-5d6c8827fb1b" />
 </div>
 
 METRICS (MEASURABLE IMPROVEMENT)

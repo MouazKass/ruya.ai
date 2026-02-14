@@ -28,24 +28,33 @@ let DB = {
 };
 
 // --- 2. AI STRATEGY ENGINE ---
+const SVG_ICONS = {
+    trade: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`,
+    flight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>`,
+    border: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V2"/><path d="m5 12 7-7 7 7"/><path d="M2 17h20"/><path d="M2 7h20"/></svg>`,
+    medical: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="4" y="4" width="16" height="6" rx="2"/><path d="M12 10v12"/><path d="M6 16h12"/></svg>`,
+    satellite: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M7.76 7.76a6 6 0 0 0 0 8.48"/><path d="M16.24 7.76a6 6 0 0 1 0 8.48"/></svg>`,
+    checkOk: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+};
+
 const STRATEGIES = {
     TRADE: {
-        id: "s-trade", type: "Economic", icon: "📉",
+        id: "s-trade", type: "Economic", icon: SVG_ICONS.trade,
         desc: (name) => `Halt all trade imports from ${name}.`,
         reason: "Viral persistence on surfaces detected in cargo."
     },
     FLIGHTS: {
-        id: "s-air", type: "Travel", icon: "✈️",
+        id: "s-air", type: "Travel", icon: SVG_ICONS.flight,
         desc: (name) => `Ground all commercial flights from ${name}.`,
         reason: "Passenger transmission probability > 85%."
     },
     BORDERS: {
-        id: "s-border", type: "Security", icon: "🚧",
+        id: "s-border", type: "Security", icon: SVG_ICONS.border,
         desc: (name) => `Seal land borders with ${name}.`,
         reason: "Uncontrolled migration vectors identified."
     },
     AID: {
-        id: "s-aid", type: "Medical", icon: "�",
+        id: "s-aid", type: "Medical", icon: SVG_ICONS.medical,
         desc: (name) => `Dispatch medical aid package to ${name}.`,
         reason: "Healthcare collapse imminent. Humanitarian crisis."
     }
@@ -65,13 +74,13 @@ function generateIntel(name, infected, pop) {
         suggestions.push(STRATEGIES.AID);
     } else if (rate > 0.001) { // Moderate
         suggestions.push({
-            id: "s-monitor", type: "Intel", icon: "�",
+            id: "s-monitor", type: "Intel", icon: SVG_ICONS.satellite,
             desc: (n) => `Increase satellite surveillance on ${n}.`,
             reason: "Anomalous movement patterns detected."
         });
     } else {
         suggestions.push({
-            id: "s-calm", type: "Status", icon: "✅",
+            id: "s-calm", type: "Status", icon: SVG_ICONS.checkOk,
             desc: (n) => `Maintain standard protocols for ${n}.`,
             reason: "No significant threat vectors."
         });
@@ -99,7 +108,35 @@ defs.append("path").attr("id", "plane-icon")
     .attr("d", "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z")
     .attr("transform", "scale(0.8) rotate(90 12 12) translate(-12 -12)");
 
+// --- INFECTION ZONE RADIAL GRADIENTS ---
+// Severity tiers: stable (low), elevated (medium), critical (high)
+const severityTiers = [
+    { id: "infection-gradient-stable", r: 220, g: 38, b: 38, centerOpacity: 0.25 },
+    { id: "infection-gradient-elevated", r: 239, g: 68, b: 68, centerOpacity: 0.45 },
+    { id: "infection-gradient-critical", r: 255, g: 0, b: 0, centerOpacity: 0.65 }
+];
+
+severityTiers.forEach(tier => {
+    const grad = defs.append("radialGradient")
+        .attr("id", tier.id)
+        .attr("cx", "50%").attr("cy", "50%")
+        .attr("r", "50%");
+    grad.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", `rgb(${tier.r},${tier.g},${tier.b})`)
+        .attr("stop-opacity", tier.centerOpacity);
+    grad.append("stop")
+        .attr("offset", "60%")
+        .attr("stop-color", `rgb(${tier.r},${tier.g},${tier.b})`)
+        .attr("stop-opacity", tier.centerOpacity * 0.4);
+    grad.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", `rgb(${tier.r},${tier.g},${tier.b})`)
+        .attr("stop-opacity", 0);
+});
+
 const g = svg.append("g");
+const infectionLayer = svg.append("g"); // Infection circles above countries
 const routesLayer = svg.append("g");
 
 const projection = d3.geoNaturalEarth1().translate([width / 2, height / 2]);
@@ -107,6 +144,7 @@ const path = d3.geoPath().projection(projection);
 
 const zoom = d3.zoom().scaleExtent([1, 12]).on("zoom", (e) => {
     g.attr("transform", e.transform);
+    infectionLayer.attr("transform", e.transform);
     routesLayer.attr("transform", e.transform);
     g.selectAll("path.country").attr("stroke-width", 0.5 / e.transform.k);
     g.selectAll(".city-marker").attr("r", 5 / Math.sqrt(e.transform.k));
@@ -146,6 +184,9 @@ Promise.all([
         .on("mouseover", (e, d) => showTooltip(e, d.name))
         .on("mouseout", hideTooltip);
 
+    // Draw infection zones after map is ready
+    drawInfectionZones();
+
     // 5. Set Initial View (Target: UAE)
     const uaeId = "784";
     const uaeFeature = DB.features[uaeId];
@@ -178,8 +219,57 @@ Promise.all([
 }).catch(error => {
     console.error("Error loading Pandemic Command Center data:", error);
 });
+// --- INFECTION ZONE VISUALIZATION ---
+
+function drawInfectionZones() {
+    infectionLayer.selectAll("*").remove();
+
+    // Find max infected for radius scaling
+    const allInfected = Object.values(DB.countries).map(c => c.infected).filter(v => v > 0);
+    if (allInfected.length === 0) return;
+    const maxInfected = d3.max(allInfected);
+
+    // Sqrt scale: infection count → pixel radius (5px to 60px)
+    const radiusScale = d3.scaleSqrt()
+        .domain([0, maxInfected])
+        .range([5, 60]);
+
+    Object.keys(DB.countries).forEach(id => {
+        const country = DB.countries[id];
+        if (country.infected <= 0) return;
+
+        const feature = DB.features[id];
+        if (!feature) return;
+
+        const centroid = d3.geoCentroid(feature);
+        const [cx, cy] = projection(centroid);
+
+        // Determine severity tier based on infection rate
+        const rate = country.infected / country.pop;
+        let gradientId;
+        if (rate > 0.05) {
+            gradientId = "infection-gradient-critical";
+        } else if (rate > 0.01) {
+            gradientId = "infection-gradient-elevated";
+        } else {
+            gradientId = "infection-gradient-stable";
+        }
+
+        const r = radiusScale(country.infected);
+
+        // Draw the infection circle
+        infectionLayer.append("circle")
+            .attr("class", "infection-zone")
+            .attr("cx", cx)
+            .attr("cy", cy)
+            .attr("r", r)
+            .attr("fill", `url(#${gradientId})`)
+            .attr("pointer-events", "none");
+    });
+}
 
 // --- INTERACTION ---
+
 
 function clickedCountry(event, d) {
     event.stopPropagation();
@@ -213,29 +303,38 @@ function drawConnections(sourceId) {
     const flightTargets = [];
     const shipTargets = [];
 
-    for (let i = 0; i < Math.min(4, targetIds.length); i++) {
+    for (let i = 0; i < Math.min(6, targetIds.length); i++) {
         const rid = targetIds[Math.floor(Math.random() * targetIds.length)];
         if (DB.features[rid]) flightTargets.push(DB.features[rid]);
     }
-    for (let i = 0; i < Math.min(3, targetIds.length); i++) {
+    for (let i = 0; i < Math.min(5, targetIds.length); i++) {
         const rid = targetIds[Math.floor(Math.random() * targetIds.length)];
         if (DB.features[rid]) shipTargets.push(DB.features[rid]);
     }
 
     flightTargets.forEach(target => {
-        const geoPath = { type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)] };
+        let start = sourceCentroid;
+        let end = d3.geoCentroid(target);
+
+        // If UAE is selected, flights are Incoming (Other -> UAE)
+        if (sourceId === UAE_ID) {
+            start = d3.geoCentroid(target);
+            end = sourceCentroid;
+        }
+
+        const geoPath = { type: "LineString", coordinates: [start, end] };
         const pathNode = routesLayer.append("path").datum(geoPath).attr("class", "route-line flight-path").attr("d", path);
         animateVehicle(pathNode, "plane-icon", "var(--flight-color)", 2500);
     });
 
-    shipTargets.forEach(target => {
-        const [portX, portY] = projection(sourceCentroid);
-        routesLayer.append("text").attr("x", portX).attr("y", portY).attr("class", "port-icon").attr("text-anchor", "middle").attr("dy", ".35em").style("font-size", "14px").text("⚓");
+    // shipTargets.forEach(target => {
+    //     const [portX, portY] = projection(sourceCentroid);
+    //     routesLayer.append("text").attr("x", portX).attr("y", portY).attr("class", "port-icon").attr("text-anchor", "middle").attr("dy", ".35em").style("font-size", "14px").text("⚓");
 
-        const geoPath = { type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)] };
-        const pathNode = routesLayer.append("path").datum(geoPath).attr("class", "route-line ship-path").attr("d", path);
-        animateVehicle(pathNode, "ship-icon", "var(--ship-color)", 6000);
-    });
+    //     const geoPath = { type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)] };
+    //     const pathNode = routesLayer.append("path").datum(geoPath).attr("class", "route-line ship-path").attr("d", path);
+    //     animateVehicle(pathNode, "ship-icon", "var(--ship-color)", 6000);
+    // });
 }
 
 function animateVehicle(pathSelection, iconId, color, duration) {
@@ -246,38 +345,81 @@ function animateVehicle(pathSelection, iconId, color, duration) {
         vehicle.append("path")
             .attr("d", "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z")
             .attr("fill", color)
-            .attr("transform", "scale(0.8) rotate(90 12 12) translate(-12 -12)");
+            .attr("transform", "scale(0.3) rotate(90 12 12) translate(-12 -12)");
     } else {
         vehicle.append("path")
             .attr("d", "M-10 0 L10 0 L7 6 L-7 6 Z M-3 0 L-3 -6 L3 -6 L3 0")
             .attr("fill", color)
-            .attr("transform", "scale(0.8)");
+            .attr("transform", "scale(0.3)");
     }
 
     transition();
     function transition() {
-        vehicle.transition().duration(duration).ease(d3.easeLinear).attrTween("transform", translateAlong(pathEl)).on("end", transition);
+        vehicle.transition().duration(duration).ease(d3.easeLinear).attrTween("transform", translateAlong(pathEl, 0.975)).on("end", transition);
     }
 
-    function translateAlong(path) {
+    function translateAlong(path, stopAt = 0.8) {
         const l = path.getTotalLength();
-        return function (d, i, a) {
+        const maxLength = l * stopAt;
+
+        return function () {
             return function (t) {
-                const p = path.getPointAtLength(t * l);
-                const pBefore = path.getPointAtLength(Math.max(0, t * l - 1));
+                const currentLength = t * maxLength;
+                const p = path.getPointAtLength(currentLength);
+                const pBefore = path.getPointAtLength(Math.max(0, currentLength - 1));
                 const angle = Math.atan2(p.y - pBefore.y, p.x - pBefore.x) * 180 / Math.PI;
+
                 return "translate(" + p.x + "," + p.y + ") rotate(" + angle + ")";
             };
         };
     }
+
 }
 
 const UAE_ID = "784";
-const DISEASE_INFO = {
-    name: "Crimson Fever",
-    symptoms: ["High Fever", "Respiratory Distress", "Hemoptysis"],
-    R0: 4.5
-};
+
+// --- PATHOGEN DATABASE (Multiple Pathogens for Carousel) ---
+const PATHOGENS = [
+    {
+        name: "Crimson Fever",
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>`,
+        symptoms: ["High Fever", "Respiratory Distress", "Hemoptysis"],
+        R0: 4.5,
+        severity: "CRITICAL",
+        origin: "Southeast Asia",
+        notes: "Airborne pathogen with 72-hour incubation. Rapid mutation observed."
+    },
+    {
+        name: "Nox Virus",
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="M17 6l-2.5-2.5"/><path d="M14 8l-1-3"/><path d="M7 18l2.5 2.5"/><path d="M10 16l1 3"/></svg>`,
+        symptoms: ["Neurological Decline", "Vision Loss", "Seizures"],
+        R0: 2.8,
+        severity: "ELEVATED",
+        origin: "Central Africa",
+        notes: "Vector-borne via mosquito. Crosses blood-brain barrier in 48 hours."
+    },
+    {
+        name: "Strain Omega-7",
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16.5h10"/></svg>`,
+        symptoms: ["Organ Failure", "Internal Hemorrhaging", "Cyanosis"],
+        R0: 6.1,
+        severity: "CRITICAL",
+        origin: "Unknown",
+        notes: "Engineered markers detected. WHO Level-4 containment required."
+    },
+    {
+        name: "Pale Rot",
+        icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>`,
+        symptoms: ["Skin Lesions", "Chronic Fatigue", "Immune Suppression"],
+        R0: 1.9,
+        severity: "MODERATE",
+        origin: "Eastern Europe",
+        notes: "Fungal-viral hybrid. Resistant to standard antivirals."
+    }
+];
+
+let currentPathogenIndex = 0;
+let carouselInterval = null;
 
 // Initialize Sidebar once (Idempotent-ish, redraws static UAE sidebar)
 function initCommandCenter() {
@@ -311,23 +453,49 @@ function updateCommandSidebar(uaeStats, topThreats, strategies) {
     const status = determineStatus(uaeStats.infected, uaeStats.pop);
 
     $panel.css("border-left-color", status.color);
-    animateTextJQ("status-count", formatNum(uaeStats.infected));
+    animateTextJQ("status-count", formatNum(uaeStats.infected), 0);
     $("#status-label").text("DOMESTIC CASES").css("color", status.color);
 
     const $alerts = $("#alerts-container");
     const $actions = $("#actions-container");
     const $recList = $("#rec-list");
 
-    let intelHTML = `
-        <div style="margin-bottom:15px;">
-            <div class="rec-head" style="color:var(--accent-color)">PATHOGEN: ${DISEASE_INFO.name}</div>
-            <div class="rec-body" style="font-size:0.75rem">Symptoms: ${DISEASE_INFO.symptoms.join(", ")}</div>
-        </div>
-        <div class="rec-head">TOP EXTERNAL THREATS</div>
-    `;
+    // --- BUILD PATHOGEN CAROUSEL ---
+    let carouselHTML = `<div class="pathogen-carousel">`;
+
+    // Slides
+    carouselHTML += `<div class="carousel-track">`;
+    PATHOGENS.forEach((p, i) => {
+        const sevColor = p.severity === "CRITICAL" ? "var(--danger-color)"
+            : p.severity === "ELEVATED" ? "var(--warning-color)"
+                : "var(--success-color)";
+        carouselHTML += `
+            <div class="carousel-slide ${i === 0 ? 'active' : ''}" data-index="${i}">
+                <div class="rec-head" style="color:var(--accent-color); display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.1rem">${p.icon}</span>
+                    PATHOGEN: ${p.name}
+                    <span class="pathogen-severity" style="background:${sevColor}">${p.severity}</span>
+                </div>
+                <div class="rec-body" style="font-size:0.75rem; margin-top:4px;">Symptoms: ${p.symptoms.join(", ")}</div>
+                <div class="rec-body" style="font-size:0.75rem; margin-top:4px;">R0: <strong style="color:var(--warning-color)">${p.R0}</strong> · Origin: <strong>${p.origin}</strong></div>
+                <div class="rec-body" style="font-size:0.7rem; margin-top:6px; font-style:italic; color:var(--text-secondary);">${p.notes}</div>
+            </div>`;
+    });
+    carouselHTML += `</div>`;
+
+    // Dots
+    carouselHTML += `<div class="carousel-dots">`;
+    PATHOGENS.forEach((_, i) => {
+        carouselHTML += `<span class="carousel-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
+    });
+    carouselHTML += `</div>`;
+    carouselHTML += `</div>`;
+
+    // Threats section
+    carouselHTML += `<div class="rec-head" style="margin-top:12px;">TOP EXTERNAL THREATS</div>`;
 
     topThreats.forEach(t => {
-        intelHTML += `
+        carouselHTML += `
             <div class="risk-item">
                 <div style="display:flex; justify-content:space-between; width:100%">
                     <span>${t.name}</span>
@@ -335,21 +503,33 @@ function updateCommandSidebar(uaeStats, topThreats, strategies) {
                 </div>
             </div>`;
     });
-    $alerts.html(intelHTML);
+    $alerts.html(carouselHTML);
     $(".panel-title", $recList).text("Intel & Situation Report");
+
+    // --- CAROUSEL LOGIC ---
+    // Dot click handlers
+    $(".carousel-dot").on("click", function () {
+        const idx = parseInt($(this).data("index"));
+        switchPathogenSlide(idx);
+        resetCarouselTimer();
+    });
+
+    // Start auto-rotation
+    resetCarouselTimer();
 
     let actionsHTML = "";
     strategies.forEach(s => {
         actionsHTML += `
-            <div class="action-card" onclick="triggerAction('${s.id}', '${s.target}')">
+            <div class="action-card">
                 <div style="display:flex; align-items:center; gap:10px; width:100%">
                     <span class="action-icon">${s.icon}</span>
                     <div style="flex:1">
                         <div class="rec-head" style="margin-bottom:2px; font-size:0.8rem; color:var(--text-secondary)">SUGGESTION: ${s.type} Protocol</div>
                         <div class="action-text">${s.desc(s.target)}</div>
                     </div>
-                    <div class="initiate-btn">
-                        INITIATE
+                    <div class="action-btns">
+                        <div class="action-btn action-btn-yes" onclick="triggerAction('${s.id}', '${s.target}', true, event)">YES</div>
+                        <div class="action-btn action-btn-no" onclick="triggerAction('${s.id}', '${s.target}', false, event)">NO</div>
                     </div>
                 </div>
             </div>`;
@@ -361,6 +541,23 @@ function updateCommandSidebar(uaeStats, topThreats, strategies) {
 
     $actions.html(actionsHTML);
     $(".panel-title", $("#action-list")).text("Strategic Response");
+}
+
+// --- CAROUSEL HELPERS ---
+function switchPathogenSlide(toIndex) {
+    currentPathogenIndex = toIndex;
+    $(".carousel-slide").removeClass("active");
+    $(".carousel-dot").removeClass("active");
+    $(`.carousel-slide[data-index="${toIndex}"]`).addClass("active");
+    $(`.carousel-dot[data-index="${toIndex}"]`).addClass("active");
+}
+
+function resetCarouselTimer() {
+    if (carouselInterval) clearInterval(carouselInterval);
+    carouselInterval = setInterval(() => {
+        const next = (currentPathogenIndex + 1) % PATHOGENS.length;
+        switchPathogenSlide(next);
+    }, 5000);
 }
 
 function updateView(type, data) {
@@ -407,19 +604,21 @@ function updateView(type, data) {
 
 // Remove old updateSidebar function as it is replaced by updateCommandSidebar
 // window.triggerAction remains same but updated for context description
-window.triggerAction = function (strategyId, targetName) {
+window.triggerAction = function (strategyId, targetName, approved, event) {
     const $card = $(event.target).closest(".action-card");
-    const $btn = $card.find("div:last-child"); // The button div
+    const $btns = $card.find(".action-btns");
 
-    $card.css("border-color", "var(--success-color)");
-    $btn.css("background", "var(--success-color)").css("color", "#fff").text("EXECUTING...");
-
-    setTimeout(() => {
-        $btn.text("AUTHORIZED");
-        $card.css("opacity", "0.6");
-    }, 1500);
-
-    console.log(`Command Center: User authorized ${strategyId} for ${targetName}`);
+    if (approved) {
+        $card.css("border-color", "var(--success-color)");
+        $btns.html(`<span class="action-btn-status" style="color:var(--success-color)">AUTHORIZED</span>`);
+        setTimeout(() => $card.css("opacity", "0.5"), 1200);
+        console.log(`Command Center: User APPROVED ${strategyId} for ${targetName}`);
+    } else {
+        $card.css("border-color", "var(--danger-color)");
+        $btns.html(`<span class="action-btn-status" style="color:var(--danger-color)">REJECTED</span>`);
+        setTimeout(() => $card.css("opacity", "0.35"), 1200);
+        console.log(`Command Center: User REJECTED ${strategyId} for ${targetName}`);
+    }
 };
 
 // jQuery Events
@@ -432,20 +631,26 @@ $("#close-modal").on("click", () => $("#status-modal").removeClass("visible"));
 function populateModal() {
     const title = $("#dash-name").text();
     $("#modal-region-name").text(title);
-    $("#metric-r0").text((1.2 + Math.random()).toFixed(2));
-    $("#metric-cfr").text((2 + Math.random() * 3).toFixed(1) + "%");
-    $("#metric-load").text(Math.floor(60 + Math.random() * 35) + "%");
+    $("#metric-air").text(Math.floor(120 + Math.random() * 380));
+    $("#metric-sea").text(Math.floor(40 + Math.random() * 160));
+    $("#metric-land").text(Math.floor(200 + Math.random() * 800));
     $("#symptom-list").html(`
         <div class="symptom-row"><div style="width:100px;">Fever</div><div class="sym-bar-bg"><div class="sym-bar-fill" style="width:88%"></div></div><div>88%</div></div>
         <div class="symptom-row"><div style="width:100px;">Cough</div><div class="sym-bar-bg"><div class="sym-bar-fill" style="width:65%"></div></div><div>65%</div></div>
     `);
 
-    const keys = Object.keys(DB.countries);
+    // UAE regional neighbors by ISO numeric ID
+    const UAE_NEIGHBORS = ["682", "512", "364", "368", "414", "634", "048"];
+    const neighbors = UAE_NEIGHBORS
+        .map(id => DB.get(id))
+        .filter(c => c !== null)
+        .sort((a, b) => b.infected - a.infected)
+        .slice(0, 3);
+
     let nHtml = "";
-    for (let i = 0; i < 3; i++) {
-        let c = DB.countries[keys[Math.floor(Math.random() * keys.length)]];
-        if (c) nHtml += `<div class="risk-item"><span>${c.name}</span><span style="color:var(--danger-color)">${formatNum(c.infected)} cases</span></div>`;
-    }
+    neighbors.forEach(c => {
+        nHtml += `<div class="risk-item"><span>${c.name}</span><span style="color:var(--danger-color)">${formatNum(c.infected)} cases</span></div>`;
+    });
     $("#neighbor-list").html(nHtml);
 }
 
@@ -466,10 +671,10 @@ function animateText(id, txt) {
     animateTextJQ(id, txt);
 }
 
-function animateTextJQ(id, txt) {
+function animateTextJQ(id, txt, timeDelay = 150) {
     const $el = $("#" + id);
-    $el.stop().animate({ opacity: 0 }, 150, function () {
-        $(this).text(txt).animate({ opacity: 1 }, 150);
+    $el.stop().animate({ opacity: 0 }, timeDelay, function () {
+        $(this).text(txt).animate({ opacity: 1 }, timeDelay);
     });
 }
 
