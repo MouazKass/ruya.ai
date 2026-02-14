@@ -1,22 +1,22 @@
 import $ from 'jquery';
 
 // --- 1. DATA INFRASTRUCTURE ---
-const config = { 
+const config = {
     mapUrl: "https://unpkg.com/world-atlas@2.0.2/countries-110m.json",
-    statsUrl: "stats.json" 
+    statsUrl: "stats.json"
 };
 
 let DB = {
     countries: {},
     cities: [],
-    features: {}, 
+    features: {},
     global: { pop: 0, infected: 0, gdp: 0 },
-    
-    init: function(data) {
+
+    init: function (data) {
         this.countries = data.countries;
         this.cities = data.cities;
         this.global = { pop: 0, infected: 0, gdp: 0 };
-        
+
         Object.keys(this.countries).forEach(id => {
             const c = this.countries[id];
             this.global.pop += c.pop;
@@ -24,28 +24,28 @@ let DB = {
             this.global.gdp += c.gdp;
         });
     },
-    get: function(id) { return this.countries[id] || null; }
+    get: function (id) { return this.countries[id] || null; }
 };
 
 // --- 2. AI STRATEGY ENGINE ---
 const STRATEGIES = {
-    TRADE: { 
-        id: "s-trade", type: "Economic", icon: "📉", 
+    TRADE: {
+        id: "s-trade", type: "Economic", icon: "📉",
         desc: (name) => `Halt all trade imports from ${name}.`,
         reason: "Viral persistence on surfaces detected in cargo."
     },
-    FLIGHTS: { 
-        id: "s-air", type: "Travel", icon: "✈️", 
+    FLIGHTS: {
+        id: "s-air", type: "Travel", icon: "✈️",
         desc: (name) => `Ground all commercial flights from ${name}.`,
         reason: "Passenger transmission probability > 85%."
     },
-    BORDERS: { 
-        id: "s-border", type: "Security", icon: "🚧", 
+    BORDERS: {
+        id: "s-border", type: "Security", icon: "🚧",
         desc: (name) => `Seal land borders with ${name}.`,
         reason: "Uncontrolled migration vectors identified."
     },
-    AID: { 
-        id: "s-aid", type: "Medical", icon: "�", 
+    AID: {
+        id: "s-aid", type: "Medical", icon: "�",
         desc: (name) => `Dispatch medical aid package to ${name}.`,
         reason: "Healthcare collapse imminent. Humanitarian crisis."
     }
@@ -64,8 +64,8 @@ function generateIntel(name, infected, pop) {
         suggestions.push(STRATEGIES.FLIGHTS);
         suggestions.push(STRATEGIES.AID);
     } else if (rate > 0.001) { // Moderate
-        suggestions.push({ 
-            id: "s-monitor", type: "Intel", icon: "�", 
+        suggestions.push({
+            id: "s-monitor", type: "Intel", icon: "�",
             desc: (n) => `Increase satellite surveillance on ${n}.`,
             reason: "Anomalous movement patterns detected."
         });
@@ -99,8 +99,8 @@ defs.append("path").attr("id", "plane-icon")
     .attr("d", "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z")
     .attr("transform", "scale(0.8) rotate(90 12 12) translate(-12 -12)");
 
-const g = svg.append("g"); 
-const routesLayer = svg.append("g"); 
+const g = svg.append("g");
+const routesLayer = svg.append("g");
 
 const projection = d3.geoNaturalEarth1().translate([width / 2, height / 2]);
 const path = d3.geoPath().projection(projection);
@@ -122,14 +122,14 @@ Promise.all([
     d3.json(config.mapUrl),
     d3.json(config.statsUrl)
 ]).then(([worldData, statsData]) => {
-    
+
     DB.init(statsData);
 
     const countries = topojson.feature(worldData, worldData.objects.countries).features;
     countries.forEach(c => { DB.features[c.id] = c; });
 
     projection.fitSize([width, height], topojson.feature(worldData, worldData.objects.countries));
-    
+
     g.selectAll("path").data(countries)
         .enter().append("path").attr("d", path).attr("class", "country")
         .on("click", clickedCountry)
@@ -145,7 +145,7 @@ Promise.all([
         .on("click", clickedCity)
         .on("mouseover", (e, d) => showTooltip(e, d.name))
         .on("mouseout", hideTooltip);
-    
+
     // 5. Set Initial View (Target: UAE)
     const uaeId = "784";
     const uaeFeature = DB.features[uaeId];
@@ -164,7 +164,7 @@ Promise.all([
         const x = (x0 + x1) / 2;
         const y = (y0 + y1) / 2;
         // Reduced scale factor from 0.9 to 0.4 to zoom out and show more context
-        const scale = Math.min(3, 0.4 / Math.max(cw / width, ch / height)); 
+        const scale = Math.min(3, 0.4 / Math.max(cw / width, ch / height));
         const translate = [width / 2 - scale * x, height / 2 - scale * y];
 
         svg.transition().duration(2000).call(
@@ -186,7 +186,7 @@ function clickedCountry(event, d) {
     activeCountry.classed("active", false);
     activeCountry = d3.select(this).classed("active", true);
     updateView('country', d.id);
-    drawConnections(d.id); 
+    drawConnections(d.id);
 }
 
 function clickedCity(event, d) {
@@ -199,31 +199,31 @@ function clickedCity(event, d) {
 function resetView() {
     activeCountry.classed("active", false);
     updateView('global', null);
-    routesLayer.selectAll("*").remove(); 
+    routesLayer.selectAll("*").remove();
 }
 
 function drawConnections(sourceId) {
-    routesLayer.selectAll("*").remove(); 
+    routesLayer.selectAll("*").remove();
     const sourceFeature = DB.features[sourceId];
-    if(!sourceFeature) return;
+    if (!sourceFeature) return;
 
     const sourceCentroid = d3.geoCentroid(sourceFeature);
     const targetIds = Object.keys(DB.countries).filter(id => id !== sourceId);
-    
+
     const flightTargets = [];
     const shipTargets = [];
-    
-    for(let i=0; i < Math.min(4, targetIds.length); i++) {
-        const rid = targetIds[Math.floor(Math.random()*targetIds.length)];
-        if(DB.features[rid]) flightTargets.push(DB.features[rid]);
+
+    for (let i = 0; i < Math.min(4, targetIds.length); i++) {
+        const rid = targetIds[Math.floor(Math.random() * targetIds.length)];
+        if (DB.features[rid]) flightTargets.push(DB.features[rid]);
     }
-    for(let i=0; i < Math.min(3, targetIds.length); i++) {
-        const rid = targetIds[Math.floor(Math.random()*targetIds.length)];
-        if(DB.features[rid]) shipTargets.push(DB.features[rid]);
+    for (let i = 0; i < Math.min(3, targetIds.length); i++) {
+        const rid = targetIds[Math.floor(Math.random() * targetIds.length)];
+        if (DB.features[rid]) shipTargets.push(DB.features[rid]);
     }
 
     flightTargets.forEach(target => {
-        const geoPath = {type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)]};
+        const geoPath = { type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)] };
         const pathNode = routesLayer.append("path").datum(geoPath).attr("class", "route-line flight-path").attr("d", path);
         animateVehicle(pathNode, "plane-icon", "var(--flight-color)", 2500);
     });
@@ -232,7 +232,7 @@ function drawConnections(sourceId) {
         const [portX, portY] = projection(sourceCentroid);
         routesLayer.append("text").attr("x", portX).attr("y", portY).attr("class", "port-icon").attr("text-anchor", "middle").attr("dy", ".35em").style("font-size", "14px").text("⚓");
 
-        const geoPath = {type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)]};
+        const geoPath = { type: "LineString", coordinates: [sourceCentroid, d3.geoCentroid(target)] };
         const pathNode = routesLayer.append("path").datum(geoPath).attr("class", "route-line ship-path").attr("d", path);
         animateVehicle(pathNode, "ship-icon", "var(--ship-color)", 6000);
     });
@@ -241,14 +241,14 @@ function drawConnections(sourceId) {
 function animateVehicle(pathSelection, iconId, color, duration) {
     const pathEl = pathSelection.node();
     const vehicle = routesLayer.append("g");
-    
+
     if (iconId === 'plane-icon') {
         vehicle.append("path")
             .attr("d", "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z")
             .attr("fill", color)
             .attr("transform", "scale(0.8) rotate(90 12 12) translate(-12 -12)");
     } else {
-         vehicle.append("path")
+        vehicle.append("path")
             .attr("d", "M-10 0 L10 0 L7 6 L-7 6 Z M-3 0 L-3 -6 L3 -6 L3 0")
             .attr("fill", color)
             .attr("transform", "scale(0.8)");
@@ -261,8 +261,8 @@ function animateVehicle(pathSelection, iconId, color, duration) {
 
     function translateAlong(path) {
         const l = path.getTotalLength();
-        return function(d, i, a) {
-            return function(t) {
+        return function (d, i, a) {
+            return function (t) {
                 const p = path.getPointAtLength(t * l);
                 const pBefore = path.getPointAtLength(Math.max(0, t * l - 1));
                 const angle = Math.atan2(p.y - pBefore.y, p.x - pBefore.x) * 180 / Math.PI;
@@ -297,7 +297,7 @@ function initCommandCenter() {
             strategies.push({ ...STRATEGIES.FLIGHTS, target: t.name });
             strategies.push({ ...STRATEGIES.TRADE, target: t.name });
         } else if (t.infected > 50000) {
-             strategies.push({ ...STRATEGIES.BORDERS, target: t.name });
+            strategies.push({ ...STRATEGIES.BORDERS, target: t.name });
         }
     });
     // Limit to 4 actionable strategies
@@ -309,7 +309,7 @@ function initCommandCenter() {
 function updateCommandSidebar(uaeStats, topThreats, strategies) {
     const $panel = $("#status-panel");
     const status = determineStatus(uaeStats.infected, uaeStats.pop);
-    
+
     $panel.css("border-left-color", status.color);
     animateTextJQ("status-count", formatNum(uaeStats.infected));
     $("#status-label").text("DOMESTIC CASES").css("color", status.color);
@@ -325,11 +325,11 @@ function updateCommandSidebar(uaeStats, topThreats, strategies) {
         </div>
         <div class="rec-head">TOP EXTERNAL THREATS</div>
     `;
-    
+
     topThreats.forEach(t => {
         intelHTML += `
-            <div class="risk-item" style="border-left: 2px solid var(--danger-color); padding-left:8px; margin-bottom:5px;">
-                <div style="display:flex; justify-content:space-between;">
+            <div class="risk-item">
+                <div style="display:flex; justify-content:space-between; width:100%">
                     <span>${t.name}</span>
                     <span style="color:var(--danger-color)">${formatNum(t.infected)}</span>
                 </div>
@@ -348,13 +348,13 @@ function updateCommandSidebar(uaeStats, topThreats, strategies) {
                         <div class="rec-head" style="margin-bottom:2px; font-size:0.8rem; color:var(--text-secondary)">SUGGESTION: ${s.type} Protocol</div>
                         <div class="action-text">${s.desc(s.target)}</div>
                     </div>
-                    <div style="background:var(--bg-color); padding:5px 10px; border-radius:4px; font-size:0.7rem; border:1px solid var(--text-secondary); cursor:pointer;">
+                    <div class="initiate-btn">
                         INITIATE
                     </div>
                 </div>
             </div>`;
     });
-    
+
     if (strategies.length === 0) {
         actionsHTML = `<div class="rec-item"><div class="rec-body">No immediate external threats requiring intervention. Monitor global vectors.</div></div>`;
     }
@@ -372,14 +372,14 @@ function updateView(type, data) {
         stats = DB.global;
         name = "Global View"; sub = "Aggregate Data";
         $("#news-action").removeClass("visible");
-    } 
+    }
     else if (type === 'country') {
         const cData = DB.get(data);
-        if (!cData) { stats = { pop: 0, infected: 0, gdp: 0 }; name = "Unknown Territory"; } 
+        if (!cData) { stats = { pop: 0, infected: 0, gdp: 0 }; name = "Unknown Territory"; }
         else { stats = cData; name = cData.name; }
         sub = "Nation Status";
         $("#news-action").addClass("visible");
-    } 
+    }
     else if (type === 'city') {
         const country = DB.get(data.countryId) || { infected: 0, pop: 1 };
         const infectionRate = country.infected / country.pop;
@@ -394,7 +394,7 @@ function updateView(type, data) {
     animateText("val-1", formatNum(stats.pop));
     animateText("val-2", stats.gdp ? "$" + stats.gdp + " B" : "---");
     animateText("val-3", formatNum(stats.infected));
-    
+
     const status = determineStatus(stats.infected, stats.pop || 1);
     animateTextJQ("val-4", status.level);
     $("#val-4").css("color", status.color);
@@ -407,18 +407,18 @@ function updateView(type, data) {
 
 // Remove old updateSidebar function as it is replaced by updateCommandSidebar
 // window.triggerAction remains same but updated for context description
-window.triggerAction = function(strategyId, targetName) {
+window.triggerAction = function (strategyId, targetName) {
     const $card = $(event.target).closest(".action-card");
     const $btn = $card.find("div:last-child"); // The button div
-    
+
     $card.css("border-color", "var(--success-color)");
     $btn.css("background", "var(--success-color)").css("color", "#fff").text("EXECUTING...");
-    
+
     setTimeout(() => {
-         $btn.text("AUTHORIZED");
-         $card.css("opacity", "0.6");
+        $btn.text("AUTHORIZED");
+        $card.css("opacity", "0.6");
     }, 1500);
-    
+
     console.log(`Command Center: User authorized ${strategyId} for ${targetName}`);
 };
 
@@ -433,42 +433,42 @@ function populateModal() {
     const title = $("#dash-name").text();
     $("#modal-region-name").text(title);
     $("#metric-r0").text((1.2 + Math.random()).toFixed(2));
-    $("#metric-cfr").text((2 + Math.random()*3).toFixed(1) + "%");
-    $("#metric-load").text(Math.floor(60 + Math.random()*35) + "%");
+    $("#metric-cfr").text((2 + Math.random() * 3).toFixed(1) + "%");
+    $("#metric-load").text(Math.floor(60 + Math.random() * 35) + "%");
     $("#symptom-list").html(`
         <div class="symptom-row"><div style="width:100px;">Fever</div><div class="sym-bar-bg"><div class="sym-bar-fill" style="width:88%"></div></div><div>88%</div></div>
         <div class="symptom-row"><div style="width:100px;">Cough</div><div class="sym-bar-bg"><div class="sym-bar-fill" style="width:65%"></div></div><div>65%</div></div>
     `);
-    
+
     const keys = Object.keys(DB.countries);
     let nHtml = "";
-    for(let i=0; i<3; i++) {
-        let c = DB.countries[keys[Math.floor(Math.random()*keys.length)]];
-        if(c) nHtml += `<div class="risk-item"><span>${c.name}</span><span style="color:var(--danger-color)">${formatNum(c.infected)} cases</span></div>`;
+    for (let i = 0; i < 3; i++) {
+        let c = DB.countries[keys[Math.floor(Math.random() * keys.length)]];
+        if (c) nHtml += `<div class="risk-item"><span>${c.name}</span><span style="color:var(--danger-color)">${formatNum(c.infected)} cases</span></div>`;
     }
     $("#neighbor-list").html(nHtml);
 }
 
-function showTooltip(e, t) { 
-    let x = e.pageX; if(x > window.innerWidth-120) x -= 120;
+function showTooltip(e, t) {
+    let x = e.pageX; if (x > window.innerWidth - 120) x -= 120;
     $tooltip.css({ opacity: 1, left: x + "px", top: (e.pageY - 10) + "px" }).text(t);
 }
 function hideTooltip() { $tooltip.css("opacity", 0); }
 
-function formatNum(n) { 
-    if(n >= 1000000) return (n/1000000).toFixed(1) + "M";
-    if(n >= 1000) return (n/1000).toFixed(1) + "k";
-    return n; 
+function formatNum(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+    if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+    return n;
 }
 
-function animateText(id, txt) { 
+function animateText(id, txt) {
     // Legacy support or just use jQuery version below.
     animateTextJQ(id, txt);
 }
 
 function animateTextJQ(id, txt) {
     const $el = $("#" + id);
-    $el.stop().animate({ opacity: 0 }, 150, function() {
+    $el.stop().animate({ opacity: 0 }, 150, function () {
         $(this).text(txt).animate({ opacity: 1 }, 150);
     });
 }
@@ -481,7 +481,7 @@ $("#btn-theme").on("click", () => {
 $("#btn-reset").on("click", resetView);
 
 $(window).on("resize", () => {
-    width = window.innerWidth; 
-    height = window.innerHeight; 
-    svg.attr("viewBox", [0, 0, width, height]); 
+    width = window.innerWidth;
+    height = window.innerHeight;
+    svg.attr("viewBox", [0, 0, width, height]);
 });

@@ -66,7 +66,7 @@ TECH STACK
 - Agents: LLM-powered specialist agents + meta-agent orchestrator
 - Storage + analytics: ClickHouse
 - Retrieval: vector index over cases + ClickHouse records + strategy memory
-- Dashboard: React
+- Dashboard: jQuery + TailwindCSS
 - Dispatch: ElevenLabs (voice), verification email
 
 
