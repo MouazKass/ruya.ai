@@ -44,11 +44,33 @@ class DispatchManager:
             "notes": notes,
             "dry_run": self.dry_run,
         }
-        voice_result = await self.voice_provider.send_briefing(message)
-        email_result = await self.email_provider.send_email(message)
-        return {
-            "dispatched": True,
+
+        errors: dict[str, str] = {}
+        voice_result: dict[str, Any] | None = None
+        email_result: dict[str, Any] | None = None
+
+        try:
+            voice_result = await self.voice_provider.send_briefing(message)
+        except Exception as exc:
+            LOGGER.exception("Voice dispatch failed for case %s", case_id)
+            errors["voice"] = str(exc)
+
+        try:
+            email_result = await self.email_provider.send_email(message)
+        except Exception as exc:
+            LOGGER.exception("Email dispatch failed for case %s", case_id)
+            errors["email"] = str(exc)
+
+        dispatched = not errors
+        partial = bool(errors) and (voice_result is not None or email_result is not None)
+        payload: dict[str, Any] = {
+            "dispatched": dispatched,
             "dry_run": self.dry_run,
             "voice": voice_result,
             "email": email_result,
         }
+        if errors:
+            payload["errors"] = errors
+        if partial:
+            payload["partial"] = True
+        return payload

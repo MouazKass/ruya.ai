@@ -201,6 +201,7 @@ class ApprovalDecision(str, Enum):
 
 class ApprovalRequest(StrictModel):
     decision: ApprovalDecision
+    run_id: str | None = None
     reviewer_name: str | None = None
     notes: str | None = None
 

@@ -179,14 +179,16 @@ class SentinelService:
             """
         )
 
-        latest_decisions = _latest_by_case(decision_rows)
-        latest_approvals = _latest_by_case(approval_rows)
+        latest_decisions = _latest_by_case_run(decision_rows)
+        latest_approvals = _latest_by_case_run(approval_rows)
 
         case_summaries: list[CaseSummary] = []
         for row in recent_rows[:20]:
             case_id = row["case_id"]
-            decision = latest_decisions.get(case_id, {})
-            approval = latest_approvals.get(case_id, {})
+            run_id = str(row.get("run_id", ""))
+            key = (case_id, run_id)
+            decision = latest_decisions.get(key, {})
+            approval = latest_approvals.get(key, {})
 
             status_value = approval.get("status") or (
                 ApprovalStatus.pending.value if int(decision.get("eligible_for_review", 0)) == 1 else ApprovalStatus.not_required.value
@@ -195,7 +197,7 @@ class SentinelService:
             case_summaries.append(
                 CaseSummary(
                     case_id=case_id,
-                    run_id=row.get("run_id", ""),
+                    run_id=run_id,
                     country=row.get("country", ""),
                     city=row.get("city", ""),
                     date=row.get("case_date"),
@@ -231,6 +233,7 @@ class SentinelService:
         details_summary = [
             {
                 "case_id": c.case_id,
+                "run_id": c.run_id,
                 "severity": c.severity,
                 "confidence": c.confidence,
                 "eligible_for_review": c.eligible_for_review,
@@ -246,32 +249,46 @@ class SentinelService:
             case_details_summary=details_summary,
         )
 
-    async def get_case_details(self, case_id: str) -> CaseDetailResponse:
-        case_rows = self.clickhouse.query_dicts(
-            """
-            SELECT case_id, run_id, case_date, country, city, lat, lon, pathogen_label, normalized_json, ground_truth_json, created_at
-            FROM cases
-            WHERE case_id = {case_id:String}
-            ORDER BY created_at DESC
-            LIMIT 1
-            """,
-            parameters={"case_id": case_id},
-        )
+    async def get_case_details(self, case_id: str, run_id: str | None = None) -> CaseDetailResponse:
+        if run_id:
+            case_rows = self.clickhouse.query_dicts(
+                """
+                SELECT case_id, run_id, case_date, country, city, lat, lon, pathogen_label, normalized_json, ground_truth_json, created_at
+                FROM cases
+                WHERE case_id = {case_id:String} AND run_id = {run_id:String}
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                parameters={"case_id": case_id, "run_id": run_id},
+            )
+        else:
+            case_rows = self.clickhouse.query_dicts(
+                """
+                SELECT case_id, run_id, case_date, country, city, lat, lon, pathogen_label, normalized_json, ground_truth_json, created_at
+                FROM cases
+                WHERE case_id = {case_id:String}
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                parameters={"case_id": case_id},
+            )
         if not case_rows:
+            if run_id:
+                raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found in run '{run_id}'")
             raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found")
 
         case_row = case_rows[0]
-        run_id = case_row.get("run_id")
+        selected_run_id = str(case_row.get("run_id", ""))
 
         decision_rows = self.clickhouse.query_dicts(
             """
             SELECT run_id, case_id, fused_score, severity, confidence, eligible_for_review, rationale, contributions_json, threshold, created_at
             FROM decisions
-            WHERE case_id = {case_id:String}
+            WHERE case_id = {case_id:String} AND run_id = {run_id:String}
             ORDER BY created_at DESC
             LIMIT 1
             """,
-            parameters={"case_id": case_id},
+            parameters={"case_id": case_id, "run_id": selected_run_id},
         )
         decision = decision_rows[0] if decision_rows else None
 
@@ -279,31 +296,31 @@ class SentinelService:
             """
             SELECT run_id, case_id, agent_name, output_json, score, confidence, created_at
             FROM agent_outputs
-            WHERE case_id = {case_id:String}
+            WHERE case_id = {case_id:String} AND run_id = {run_id:String}
             ORDER BY created_at ASC
             """,
-            parameters={"case_id": case_id},
+            parameters={"case_id": case_id, "run_id": selected_run_id},
         )
 
         approval_rows = self.clickhouse.query_dicts(
             """
             SELECT run_id, case_id, status, reviewer_name, notes, dispatch_json, timestamp
             FROM approvals
-            WHERE case_id = {case_id:String}
+            WHERE case_id = {case_id:String} AND run_id = {run_id:String}
             ORDER BY timestamp DESC
             """,
-            parameters={"case_id": case_id},
+            parameters={"case_id": case_id, "run_id": selected_run_id},
         )
 
         audit_rows = self.clickhouse.query_dicts(
             """
             SELECT run_id, case_id, event_type, actor, payload_json, timestamp
             FROM audit_logs
-            WHERE case_id = {case_id:String}
+            WHERE case_id = {case_id:String} AND run_id = {run_id:String}
             ORDER BY timestamp DESC
             LIMIT 200
             """,
-            parameters={"case_id": case_id},
+            parameters={"case_id": case_id, "run_id": selected_run_id},
         )
 
         rag_context = {}
@@ -324,7 +341,6 @@ class SentinelService:
                 "output": _loads_json(row.get("output_json")),
             }
             for row in agent_rows
-            if (run_id is None or row.get("run_id") == run_id)
         ]
 
         if decision is not None:
@@ -359,17 +375,31 @@ class SentinelService:
         )
 
     async def apply_approval(self, case_id: str, approval: ApprovalRequest) -> ApprovalResponse:
-        decision_rows = self.clickhouse.query_dicts(
-            """
-            SELECT run_id, case_id, severity, confidence, eligible_for_review, rationale, created_at
-            FROM decisions
-            WHERE case_id = {case_id:String}
-            ORDER BY created_at DESC
-            LIMIT 1
-            """,
-            parameters={"case_id": case_id},
-        )
+        if approval.run_id:
+            decision_rows = self.clickhouse.query_dicts(
+                """
+                SELECT run_id, case_id, severity, confidence, eligible_for_review, rationale, created_at
+                FROM decisions
+                WHERE case_id = {case_id:String} AND run_id = {run_id:String}
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                parameters={"case_id": case_id, "run_id": approval.run_id},
+            )
+        else:
+            decision_rows = self.clickhouse.query_dicts(
+                """
+                SELECT run_id, case_id, severity, confidence, eligible_for_review, rationale, created_at
+                FROM decisions
+                WHERE case_id = {case_id:String}
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                parameters={"case_id": case_id},
+            )
         if not decision_rows:
+            if approval.run_id:
+                raise HTTPException(status_code=404, detail=f"Case '{case_id}' has no decision in run '{approval.run_id}'")
             raise HTTPException(status_code=404, detail=f"Case '{case_id}' has no decision")
 
         decision_row = decision_rows[0]
@@ -383,12 +413,16 @@ class SentinelService:
         dispatch_payload: dict[str, Any] = {"dispatched": False, "reason": "not_approved"}
 
         if status == ApprovalStatus.approved.value:
-            dispatch_payload = await self.dispatch_manager.dispatch_if_approved(
-                case_id=case_id,
-                decision_payload=decision_row,
-                approval_status=status,
-                notes=approval.notes,
-            )
+            try:
+                dispatch_payload = await self.dispatch_manager.dispatch_if_approved(
+                    case_id=case_id,
+                    decision_payload=decision_row,
+                    approval_status=status,
+                    notes=approval.notes,
+                )
+            except Exception as exc:
+                LOGGER.exception("Dispatch failed for case %s", case_id)
+                dispatch_payload = {"dispatched": False, "reason": "dispatch_error", "error": str(exc)}
 
         self.clickhouse.insert(
             table="approvals",
@@ -469,21 +503,24 @@ class SentinelService:
                     payload=rag_context,
                 )
 
-                genomics_output = await self.genomics_agent.run(
-                    payload={
-                        "case": normalized_case,
-                        "ingest_output": ingest_output.model_dump(),
-                    },
-                    rag_context=rag_context,
-                    strategy_notes=strategy_hints,
-                )
-                epi_output = await self.epi_agent.run(
-                    payload={
-                        "case": normalized_case,
-                        "ingest_output": ingest_output.model_dump(),
-                    },
-                    rag_context=rag_context,
-                    strategy_notes=strategy_hints,
+                # Run genomics + epi_osint in parallel (they're independent)
+                genomics_output, epi_output = await asyncio.gather(
+                    self.genomics_agent.run(
+                        payload={
+                            "case": normalized_case,
+                            "ingest_output": ingest_output.model_dump(),
+                        },
+                        rag_context=rag_context,
+                        strategy_notes=strategy_hints,
+                    ),
+                    self.epi_agent.run(
+                        payload={
+                            "case": normalized_case,
+                            "ingest_output": ingest_output.model_dump(),
+                        },
+                        rag_context=rag_context,
+                        strategy_notes=strategy_hints,
+                    ),
                 )
                 meta_output = await self.meta_agent.run(
                     payload={
@@ -919,12 +956,16 @@ def _decision_to_status(decision: ApprovalDecision) -> str:
     return ApprovalStatus.request_more_evidence.value
 
 
-def _latest_by_case(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    latest: dict[str, dict[str, Any]] = {}
+def _latest_by_case_run(rows: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+    latest: dict[tuple[str, str], dict[str, Any]] = {}
     for row in rows:
-        case_id = row.get("case_id")
-        if case_id and case_id not in latest:
-            latest[case_id] = row
+        case_id = str(row.get("case_id", "")).strip()
+        run_id = str(row.get("run_id", "")).strip()
+        if not case_id:
+            continue
+        key = (case_id, run_id)
+        if key not in latest:
+            latest[key] = row
     return latest
 
 

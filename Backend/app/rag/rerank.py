@@ -13,13 +13,22 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Reranker:
-    """Cohere Rerank v3.5 via Amazon Bedrock, with local cosine-sort fallback."""
+    """Amazon Rerank / Cohere Rerank via Bedrock, with local cosine-sort fallback."""
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        self._client = None
+        self._client = None          # bedrock-runtime  (Cohere)
+        self._agent_client = None    # bedrock-agent-runtime  (Amazon Rerank)
         if settings.use_rerank:
-            self._client = boto3.client("bedrock-runtime", **settings.boto3_credentials())
+            model_id = settings.bedrock_rerank_model_id
+            if "amazon.rerank" in model_id:
+                self._agent_client = boto3.client(
+                    "bedrock-agent-runtime", **settings.boto3_credentials()
+                )
+            else:
+                self._client = boto3.client(
+                    "bedrock-runtime", **settings.boto3_credentials()
+                )
 
     def rerank(
         self,
@@ -33,19 +42,75 @@ class Reranker:
 
         k = top_k or len(items)
 
+        if self._agent_client is not None:
+            try:
+                return self._rerank_amazon(query=query, items=items, top_k=k)
+            except Exception:
+                LOGGER.exception("Amazon rerank failed; falling back to local sort")
+
         if self._client is not None:
             try:
-                return self._rerank_bedrock(query=query, items=items, top_k=k)
+                return self._rerank_cohere(query=query, items=items, top_k=k)
             except Exception:
                 LOGGER.exception("Cohere rerank failed; falling back to local sort")
 
         return self._rerank_local(items, top_k=k)
 
     # ------------------------------------------------------------------
-    # Bedrock Cohere Rerank
+    # Amazon Rerank (bedrock-agent-runtime)
     # ------------------------------------------------------------------
 
-    def _rerank_bedrock(
+    def _rerank_amazon(
+        self,
+        query: str,
+        items: list[dict[str, Any]],
+        top_k: int,
+    ) -> list[dict[str, Any]]:
+        documents = [self._item_to_text(it) for it in items]
+        model_id = self.settings.bedrock_rerank_model_id
+        region = self.settings.aws_region
+
+        sources = [
+            {
+                "inlineDocumentSource": {
+                    "textDocument": {"text": doc},
+                    "type": "TEXT",
+                },
+                "type": "INLINE",
+            }
+            for doc in documents
+        ]
+
+        response = self._agent_client.rerank(
+            queries=[{"textQuery": {"text": query}, "type": "TEXT"}],
+            rerankingConfiguration={
+                "type": "BEDROCK_RERANKING_MODEL",
+                "bedrockRerankingConfiguration": {
+                    "modelConfiguration": {
+                        "modelArn": (
+                            f"arn:aws:bedrock:{region}::foundation-model/{model_id}"
+                        ),
+                    },
+                    "numberOfResults": min(top_k, len(documents)),
+                },
+            },
+            sources=sources,
+        )
+
+        ranked_results = response.get("results", [])
+        reranked: list[dict[str, Any]] = []
+        for entry in ranked_results:
+            idx = entry["index"]
+            relevance = float(entry.get("relevanceScore", 0.0))
+            item = {**items[idx], "rerank_score": relevance}
+            reranked.append(item)
+        return reranked
+
+    # ------------------------------------------------------------------
+    # Cohere Rerank (bedrock-runtime invoke_model)
+    # ------------------------------------------------------------------
+
+    def _rerank_cohere(
         self,
         query: str,
         items: list[dict[str, Any]],
