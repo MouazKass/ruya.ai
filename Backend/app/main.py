@@ -9,6 +9,7 @@ from app.api.approvals import router as approvals_router
 from app.api.cases import router as cases_router
 from app.api.dashboard import router as dashboard_router
 from app.api.runs import router as runs_router
+from app.api.suggestions import router as suggestions_router
 from app.config import get_settings
 from app.dispatch.base import DispatchManager
 from app.dispatch.elevenlabs_stub import ElevenLabsStubProvider
@@ -41,6 +42,7 @@ app.include_router(dashboard_router)
 app.include_router(runs_router)
 app.include_router(cases_router)
 app.include_router(approvals_router)
+app.include_router(suggestions_router)
 
 
 @app.get("/health")

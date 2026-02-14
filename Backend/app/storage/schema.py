@@ -53,10 +53,29 @@ SCHEMA_STATEMENTS = [
         rationale String,
         contributions_json String,
         threshold Float64,
+        suggestion String DEFAULT '',
         created_at DateTime DEFAULT now()
     )
     ENGINE = MergeTree
     ORDER BY (case_id, run_id, created_at)
+    """,
+    # Migration: add suggestion column to existing decisions tables
+    """
+    ALTER TABLE decisions ADD COLUMN IF NOT EXISTS suggestion String DEFAULT ''
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS suggestion_executions (
+        execution_id UUID DEFAULT generateUUIDv4(),
+        case_id String,
+        run_id String,
+        suggestion String,
+        operator_name Nullable(String),
+        notes Nullable(String),
+        dispatch_json String,
+        executed_at DateTime DEFAULT now()
+    )
+    ENGINE = MergeTree
+    ORDER BY (case_id, run_id, executed_at)
     """,
     """
     CREATE TABLE IF NOT EXISTS approvals (

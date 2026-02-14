@@ -56,6 +56,20 @@ class MetaAgent(AgentBase):
         )[0]
         strategy = f"Prioritize {top_signal} signal handling; calibrate confidence around low-reliability OSINT."
 
+        # Build a contextual 1-line actionable suggestion
+        country = (payload.get("case") or {}).get("country", "the affected region")
+        city = (payload.get("case") or {}).get("city", "")
+        location_label = f"{city}, {country}" if city else country
+
+        if fused >= 7.0 and confidence_pct >= 60.0:
+            suggestion = f"Dispatch outbreak alert to regional health authority for {location_label}."
+        elif fused >= 5.0:
+            suggestion = f"Increase epidemiological surveillance cadence in {location_label}."
+        elif top_signal == "genomics" and genomics_score >= 4.0:
+            suggestion = f"Expand genomic sequencing coverage in {location_label} laboratories."
+        else:
+            suggestion = f"Continue routine monitoring for {location_label}; no immediate action required."
+
         rationale = (
             f"Fusion used weights genomics={w_genomics:.2f}, epi={w_epi:.2f}, geo={w_geo:.2f}. "
             f"Scores were genomics={genomics_score:.2f}, epi={epi_score:.2f}, geo={geo_score:.2f}."
@@ -72,6 +86,7 @@ class MetaAgent(AgentBase):
                 "geo": round(geo_score, 3),
             },
             "recommended_action": recommended_action,
+            "suggestion": suggestion,
             "strategy_notes": strategy,
             "updated_prompts": {
                 "ingest": "Normalize signals and preserve credibility markers.",

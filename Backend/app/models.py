@@ -181,6 +181,9 @@ class MetaOutput(StrictModel):
     rationale: str
     contributions: ContributionScores
     recommended_action: str
+    suggestion: str = Field(
+        description="One-line actionable suggestion for the human operator",
+    )
     strategy_notes: str
     updated_prompts: dict[str, str]
 
@@ -241,6 +244,7 @@ class CaseSummary(StrictModel):
     severity: float
     confidence: float
     eligible_for_review: bool
+    suggestion: str = ""
 
 
 class DashboardResponse(StrictModel):
@@ -257,6 +261,21 @@ class CaseDetailResponse(StrictModel):
     decision: dict[str, Any] | None
     approvals: list[dict[str, Any]]
     audit_trail: list[dict[str, Any]]
+    suggestion: str = ""
+
+
+class SuggestionExecuteRequest(StrictModel):
+    """Payload sent when the operator clicks 'Do it' on a suggestion."""
+    run_id: str | None = None
+    operator_name: str | None = None
+    notes: str | None = None
+
+
+class SuggestionExecuteResponse(StrictModel):
+    case_id: str
+    suggestion: str
+    executed: bool
+    dispatch: dict[str, Any]
 
 
 class FusionState(StrictModel):

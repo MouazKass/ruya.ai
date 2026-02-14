@@ -35,6 +35,8 @@ from app.models import (
     FusionState,
     RawCaseInput,
     RunStatusResponse,
+    SuggestionExecuteRequest,
+    SuggestionExecuteResponse,
 )
 from app.rag.embed import EmbeddingService, case_to_embedding_text
 from app.rag.retrieve import Retriever
@@ -164,7 +166,7 @@ class SentinelService:
         )
         decision_rows = self.clickhouse.query_dicts(
             """
-            SELECT case_id, run_id, severity, confidence, eligible_for_review, fused_score, created_at
+            SELECT case_id, run_id, severity, confidence, eligible_for_review, fused_score, suggestion, created_at
             FROM decisions
             ORDER BY created_at DESC
             LIMIT 1000
@@ -205,6 +207,7 @@ class SentinelService:
                     severity=round(float(decision.get("severity", 0.0)), 3),
                     confidence=round(float(decision.get("confidence", 0.0)), 3),
                     eligible_for_review=bool(int(decision.get("eligible_for_review", 0))),
+                    suggestion=str(decision.get("suggestion", "")),
                 )
             )
 
@@ -225,6 +228,7 @@ class SentinelService:
                 "severity": c.severity,
                 "confidence": c.confidence,
                 "status": c.status,
+                "suggestion": c.suggestion,
             }
             for c in case_summaries
             if c.status == ApprovalStatus.pending.value and c.eligible_for_review
@@ -238,6 +242,7 @@ class SentinelService:
                 "confidence": c.confidence,
                 "eligible_for_review": c.eligible_for_review,
                 "status": c.status,
+                "suggestion": c.suggestion,
             }
             for c in case_summaries
         ]
@@ -282,7 +287,7 @@ class SentinelService:
 
         decision_rows = self.clickhouse.query_dicts(
             """
-            SELECT run_id, case_id, fused_score, severity, confidence, eligible_for_review, rationale, contributions_json, threshold, created_at
+            SELECT run_id, case_id, fused_score, severity, confidence, eligible_for_review, rationale, contributions_json, threshold, suggestion, created_at
             FROM decisions
             WHERE case_id = {case_id:String} AND run_id = {run_id:String}
             ORDER BY created_at DESC
@@ -291,6 +296,7 @@ class SentinelService:
             parameters={"case_id": case_id, "run_id": selected_run_id},
         )
         decision = decision_rows[0] if decision_rows else None
+        suggestion_text = str(decision.get("suggestion", "")) if decision else ""
 
         agent_rows = self.clickhouse.query_dicts(
             """
@@ -372,6 +378,7 @@ class SentinelService:
             decision=decision,
             approvals=approvals,
             audit_trail=audits,
+            suggestion=suggestion_text,
         )
 
     async def apply_approval(self, case_id: str, approval: ApprovalRequest) -> ApprovalResponse:
@@ -454,6 +461,97 @@ class SentinelService:
         )
 
         return ApprovalResponse(case_id=case_id, status=ApprovalStatus(status), dispatch=dispatch_payload)
+
+    async def execute_suggestion(self, case_id: str, request: SuggestionExecuteRequest) -> SuggestionExecuteResponse:
+        """Execute the AI-generated suggestion for a case ('Do it' button)."""
+        # Fetch the latest decision for this case
+        if request.run_id:
+            decision_rows = self.clickhouse.query_dicts(
+                """
+                SELECT run_id, case_id, severity, confidence, rationale, suggestion
+                FROM decisions
+                WHERE case_id = {case_id:String} AND run_id = {run_id:String}
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                parameters={"case_id": case_id, "run_id": request.run_id},
+            )
+        else:
+            decision_rows = self.clickhouse.query_dicts(
+                """
+                SELECT run_id, case_id, severity, confidence, rationale, suggestion
+                FROM decisions
+                WHERE case_id = {case_id:String}
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                parameters={"case_id": case_id},
+            )
+
+        if not decision_rows:
+            raise HTTPException(status_code=404, detail=f"No decision found for case '{case_id}'")
+
+        decision_row = decision_rows[0]
+        run_id = str(decision_row.get("run_id", ""))
+        suggestion = str(decision_row.get("suggestion", ""))
+
+        if not suggestion:
+            raise HTTPException(status_code=400, detail=f"No suggestion available for case '{case_id}'")
+
+        # Dispatch the suggestion via voice + email
+        dispatch_payload: dict[str, Any] = {"dispatched": False, "reason": "suggestion_execution"}
+        try:
+            dispatch_payload = await self.dispatch_manager.dispatch_if_approved(
+                case_id=case_id,
+                decision_payload={**decision_row, "suggestion": suggestion},
+                approval_status=ApprovalStatus.approved.value,
+                notes=f"[Suggestion executed] {suggestion}",
+            )
+            dispatch_payload["suggestion_executed"] = True
+        except Exception as exc:
+            LOGGER.exception("Suggestion dispatch failed for case %s", case_id)
+            dispatch_payload = {
+                "dispatched": False,
+                "suggestion_executed": False,
+                "reason": "dispatch_error",
+                "error": str(exc),
+            }
+
+        # Record the execution
+        self.clickhouse.insert(
+            table="suggestion_executions",
+            rows=[
+                [
+                    case_id,
+                    run_id,
+                    suggestion,
+                    request.operator_name,
+                    request.notes,
+                    json.dumps(dispatch_payload, default=str),
+                ]
+            ],
+            column_names=["case_id", "run_id", "suggestion", "operator_name", "notes", "dispatch_json"],
+        )
+
+        log_audit_event(
+            clickhouse=self.clickhouse,
+            run_id=run_id,
+            case_id=case_id,
+            event_type="suggestion_executed",
+            actor=request.operator_name or "operator",
+            payload={
+                "suggestion": suggestion,
+                "dispatch": dispatch_payload,
+                "notes": request.notes,
+            },
+        )
+
+        return SuggestionExecuteResponse(
+            case_id=case_id,
+            suggestion=suggestion,
+            executed=dispatch_payload.get("dispatched", False) or dispatch_payload.get("suggestion_executed", False),
+            dispatch=dispatch_payload,
+        )
 
     async def _execute_run(self, run_id: str, selected_cases: list[dict[str, Any]], started_at: datetime) -> None:
         metrics_inputs: list[CaseMetricInput] = []
@@ -561,6 +659,7 @@ class SentinelService:
                             meta_output.rationale,
                             json.dumps(meta_output.contributions.model_dump()),
                             fusion_state.threshold,
+                            meta_output.suggestion,
                         ]
                     ],
                     column_names=[
@@ -573,6 +672,7 @@ class SentinelService:
                         "rationale",
                         "contributions_json",
                         "threshold",
+                        "suggestion",
                     ],
                 )
 

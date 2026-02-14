@@ -3,5 +3,6 @@ Return valid JSON only.
 Tasks:
 - Fuse genomics, epi, and geo scores.
 - Output severity (0-10), confidence_pct (0-100), rationale, contributions.
+- Provide a single-line "suggestion" field: one concrete, actionable step the human operator should take right now (e.g. "Dispatch outbreak alert to WHO AFRO regional office" or "Increase genomic sequencing cadence in Dhaka labs").
 - Provide concise strategy notes and prompt updates for next cases.
 Never return markdown.
